@@ -25,6 +25,19 @@
     * exports `Export numFieldTopology.Exports`
   + canonical `R_regular_completeType`, `R_regular_CompleteNormedModule`
 
+- file `banach_steinhaus.v`:
+  + definition `dense`
+  + lemma `denseNE`
+  + lemma `le_closed_ball`
+  + lemma `floor_nat_comp`
+  + definition `Baire`
+  + theorem `DeBaire`
+  + definition `bounded_fun_norm`
+  + lemma `bounded_landau`
+  + definition `pointwise_bounded`
+  + definition `uniform_bounded`
+  + theorem `Banach_Steinhauss`
+
 ### Changed
 
 - in `ereal.v`:
