@@ -35,6 +35,19 @@
   + notation `[disjoint ... & ..]`
   + lemmas `mkset_nil`, `bigcup_mkset`, `bigcup_nonempty`, `bigcup0`, `bigcup0P`,
     `subset_bigcup_r`, `eqbigcup_r`
+- in `measure.v`:
+  + lemma `eq_bigcupB_of_bigsetU`
+  + definition `caratheodory_measurable`, notation `... .-measurable`
+  + lemmas `le_caratheodory_measurable`, `outer_measure_bigcup_lim`,
+    `caratheodory_measurable_{set0,setC,setU_le,setU,bigsetU,setI,setD}`
+    `disjoint_caratheodoryIU`, `caratheodory_additive`,
+    `caratheodory_lim_lee`, `caratheodory_measurable_trivIset_bigcup`,
+   `caratheodory_measurable_bigcup`
+  + definitions `measurable`, `caratheodory_mixin`, `caratheodory_measurableType`
+  + lemmas `caratheodory_measure0`, `caratheodory_measure_ge0`,
+    `caratheodory_measure_sigma_additive`,
+    defintions `caratheodory_measure_mixin`, `measure_of_outer_measure`,
+    lemma `caratheodory_measure_complete`
 
 ### Changed
 
@@ -61,6 +74,8 @@
   + lemmas `nbhs_oo_up_e1`, `nbhs_oo_down_e1`, `nbhs_oo_up_1e`, `nbhs_oo_down_1e`
     `nbhs_fin_out_above`, `nbhs_fin_out_below`, `nbhs_fin_out_above_below`
     `nbhs_fin_inbound`
+- in `classical_sets.v`:
+  + lemma `subset_bigsetU` generalized
 
 ### Renamed
 
