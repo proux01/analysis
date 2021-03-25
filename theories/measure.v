@@ -37,14 +37,13 @@ From HB Require Import structures.
 (*                     i.e., forall Y, mu X = mu (X `&` Y) + mu (X `&` ~` Y)  *)
 (*                                                                            *)
 (* Caratheodory theorem:                                                      *)
-(* caratheodory_measurableType mu == measurableType built from the outer      *)
-(*                         measure mu, formed by mu.-measurable sets          *)
-(* measure_of_outer_measure mu == the restriction of the outer measure mu to  *)
-(*                          the sigma algebra of Caratheodory measurable sets *)
-(*                          is a measure                                      *)
-(* caratheodory_measure_complete == sets that are negligible for              *)
-(*                           measure_of_outer_measure are Caratheodory        *)
-(*                           measurable                                       *)
+(* caratheodory_type mu := T, where mu : {outer_measure set T -> {ereal R}}   *)
+(*                         it is a canonical mesurableType copy of T.         *)
+(* caratheodory_measure mu == the restriction of the outer measure mu to the  *)
+(*                         sigma algebra of Caratheodory measurable sets is a *)
+(*                         measure                                            *)
+(*                         Remark: sets that are negligible for               *)
+(*                         caratheodory_measure are Caratheodory measurable   *)
 (*                                                                            *)
 (******************************************************************************)
 
@@ -999,19 +998,20 @@ Qed.
 
 End caratheodory_theorem_sigma_algebra.
 
-Definition measurables (R : realType) (T : Type)
+Definition caratheodory_type (R : realType) (T : Type)
   (mu : {outer_measure set T -> {ereal R}}) := T.
 
 Section caratheodory_sigma_algebra.
 Variables (R : realType) (T : Type) (mu : {outer_measure set T -> {ereal R}}).
 
-HB.instance Definition caratheodory_mixin := @isMeasurable.Build (measurables mu)
-  mu.-measurable
-  (caratheodory_measurable_set0 mu)
-  (@caratheodory_measurable_setC _ _ mu)
-  (@caratheodory_measurable_bigcup _ _ mu).
+HB.instance Definition caratheodory_mixin := @isMeasurable.Build
+  (caratheodory_type mu) mu.-measurable
+    (caratheodory_measurable_set0 mu)
+    (@caratheodory_measurable_setC _ _ mu)
+    (@caratheodory_measurable_bigcup _ _ mu).
 
-Definition caratheodory_measurableType := [the measurableType of measurables mu].
+Definition caratheodory_measurableType :=
+  [the measurableType of caratheodory_type mu].
 End caratheodory_sigma_algebra.
 
 Section caratheodory_measure.
@@ -1047,11 +1047,11 @@ Qed.
 
 Definition caratheodory_measure_mixin := Measure.Axioms caratheodory_measure0
   caratheodory_measure_ge0 caratheodory_measure_sigma_additive.
-Definition measure_of_outer_measure : {measure set (measurables mu) -> _} :=
+Definition caratheodory_measure : {measure set (caratheodory_type mu) -> _} :=
   Measure.Pack _ caratheodory_measure_mixin.
 
 Lemma caratheodory_measure_complete (B : set U) :
-  measure_of_outer_measure.-negligible B -> mu.-measurable B.
+  caratheodory_measure.-negligible B -> mu.-measurable B.
 Proof.
 move=> [A [mA muA0 BA]]; apply le_caratheodory_measurable => X.
 suff -> : mu (X `&` B) = 0%:E.

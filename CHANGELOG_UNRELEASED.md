@@ -43,10 +43,10 @@
     `disjoint_caratheodoryIU`, `caratheodory_additive`,
     `caratheodory_lim_lee`, `caratheodory_measurable_trivIset_bigcup`,
    `caratheodory_measurable_bigcup`
-  + definitions `measurable`, `caratheodory_mixin`, `caratheodory_measurableType`
+  + definitions `caratheodory_type`, `caratheodory_mixin`, `caratheodory_measurableType`
   + lemmas `caratheodory_measure0`, `caratheodory_measure_ge0`,
     `caratheodory_measure_sigma_additive`,
-    defintions `caratheodory_measure_mixin`, `measure_of_outer_measure`,
+    defintions `caratheodory_measure_mixin`, `caratheodory_measure`,
     lemma `caratheodory_measure_complete`
 
 ### Changed
