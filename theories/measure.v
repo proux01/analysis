@@ -55,6 +55,10 @@ Import Order.TTheory GRing.Theory Num.Def Num.Theory.
 Reserved Notation "mu .-negligible" (at level 2, format "mu .-negligible").
 Reserved Notation "{ 'ae' m , P }" (at level 0, format "{ 'ae'  m ,  P }").
 Reserved Notation "mu .-measurable" (at level 2, format "mu .-measurable").
+Reserved Notation "\sum^oo_ i F"
+  (at level 41, F at level 41, i at level 0,
+           format "'[' \sum^oo_ i '/  '  F ']'").
+Notation "\sum^oo_ n F" := (lim (fun m => (\sum_(n < m) F)%E)).
 
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
@@ -658,7 +662,7 @@ Variable (mu : {measure set T -> {ereal R}}).
 Theorem generalized_Boole_inequality (A : (set T) ^nat) :
   (forall i : nat, measurable (A i)) ->
   (measurable (\bigcup_n A n)) ->
-  (mu (\bigcup_n A n) <= lim (fun n => \sum_(i < n) mu (A i)))%E.
+  (mu (\bigcup_n A n) <= \sum^oo_i (mu (A i)))%E.
 Proof.
 move=> mA mbigcupA; set B := fun n => \big[setU/set0]_(i < n.+1) (A i).
 have AB : \bigcup_k A k = \bigcup_n B n.
@@ -679,7 +683,7 @@ have -> : lim (mu \o B) = ereal_sup ((mu \o B) @` setT).
     by move/nondecreasing_seq_ereal_cvg; apply/(@cvg_lim _ _ (mu \o B @ \oo)) (* bug *).
   move=> n m nm; apply: le_measure => //; try by rewrite inE; apply mB.
   by move: nm; rewrite -ltnS; exact/(@subset_bigsetU _ _ xpredT).
-have BA : forall m, (mu (B m) <= lim (fun n : nat => \sum_(i < n) mu (A i)))%E.
+have BA : forall m, (mu (B m) <= \sum^oo_i (mu (A i)))%E.
   move=> m; rewrite (le_trans (le_mu_bigsetU (measure_additive_measure mu) mA m.+1)) // -/(B m).
   by apply: (@ereal_nneg_series_lim_ge _ (mu \o A) xpredT) => n _; exact: measure_ge0.
 by apply ub_ereal_sup => /= x [n _ <-{x}]; apply BA.
@@ -729,7 +733,7 @@ Notation "{ 'ae' m , P }" := (almost_everywhere m (inPhantom P)) : type_scope.
 
 Definition sigma_subadditive (R : numFieldType) (T : Type)
   (mu : set T -> {ereal R}) := forall (A : (set T) ^nat),
-  (mu (\bigcup_n (A n)) <= lim (fun n => \sum_(i < n) mu (A i)))%E.
+  (mu (\bigcup_n (A n)) <= \sum^oo_i (mu (A i)))%E.
 
 Module OuterMeasure.
 
@@ -834,7 +838,7 @@ Variables (R : realType) (T : Type)
   (mu : {outer_measure set T -> {ereal R}}).
 
 Lemma outer_measure_bigcup_lim (A : (set T) ^nat)  X :
-  (mu (X `&` \bigcup_k A k) <= lim (fun n => \sum_(k < n) mu (X `&` A k)))%E.
+  (mu (X `&` \bigcup_k A k) <= \sum^oo_k (mu (X `&` A k)))%E.
 Proof.
 apply: (le_trans _ (outer_measure_sigma_subadditive mu (fun n => X `&` A n))).
 by apply/le_outer_measure; rewrite bigcup_distrr.
@@ -950,7 +954,7 @@ Qed.
 
 Lemma caratheodory_lim_lee (A : (set T) ^nat) : (forall n, M (A n)) ->
   trivIset setT A -> forall X,
-  (lim (fun n => \sum_(k < n) mu (X `&` A k)) + mu (X `&` ~` \bigcup_k A k) <=
+  (\sum^oo_k (mu (X `&` A k)) + mu (X `&` ~` \bigcup_k A k) <=
    mu X)%E.
 Proof.
 move=> MA tA X.
@@ -1028,8 +1032,7 @@ Proof. by move=> mx; apply outer_measure_ge0. Qed.
 Lemma caratheodory_measure_sigma_additive : @semi_sigma_additive _ U mu.
 Proof.
 move=> A mA tA mbigcupA; set B := \bigcup_k A k.
-suff : forall X, (mu X = lim (fun n : nat => \sum_(k < n) mu (X `&` A k)) +
-             mu (X `&` ~` B))%E.
+suff : forall X, (mu X = \sum^oo_k (mu (X `&` A k)) + mu (X `&` ~` B))%E.
   move/(_ B); rewrite setICr outer_measure0 adde0.
   rewrite (_ : (fun n => _) = (fun n => (\sum_(k < n) mu (A k))%E)); last first.
     rewrite funeqE => n; apply eq_bigr => i _; congr (mu _).

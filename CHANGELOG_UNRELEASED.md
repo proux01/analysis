@@ -48,6 +48,7 @@
     `caratheodory_measure_sigma_additive`,
     defintions `caratheodory_measure_mixin`, `caratheodory_measure`,
     lemma `caratheodory_measure_complete`
+  + notation `\sum^oo_i F`
 
 ### Changed
 
