@@ -209,7 +209,7 @@ Arguments mkset _ _ _ /.
 Notation "[ 'set' x : T | P ]" := (mkset (fun x : T => P)) : classical_set_scope.
 Notation "[ 'set' x | P ]" := [set x : _ | P] : classical_set_scope.
 Notation "[ 'set' E | x 'in' A ]" :=
-  [set y | exists2 x, A x & E = y] : classical_set_scope.
+  [set y | exists2 x, (A : set _) x & E = y] : classical_set_scope.
 Notation "[ 'set' E | x 'in' A & y 'in' B ]" :=
   [set z | exists2 x, A x & exists2 y, B y & E = z] : classical_set_scope.
 
