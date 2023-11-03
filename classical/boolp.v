@@ -510,9 +510,9 @@ Lemma wlog_neg P : (~ P -> P) -> P.
 Proof. by move=> ?; case: (pselect P). Qed.
 
 Lemma not_inj : injective not. Proof. exact: can_inj notK. Qed.
-Lemma notLR P Q : (P = ~ Q) -> (~ P) = Q. Proof. exact: canLR notK. Qed.
+Lemma notLR P Q : (P = (~ Q)) -> (~ P) = Q. Proof. exact: canLR notK. Qed.
 
-Lemma notRL P Q : (~ P) = Q -> P = ~ Q. Proof. exact: canRL notK. Qed.
+Lemma notRL P Q : (~ P) = Q -> P = (~ Q). Proof. exact: canRL notK. Qed.
 
 Lemma iff_notr (P Q : Prop) : (P <-> ~ Q) <-> (~ P <-> Q).
 Proof. by split=> [/propext ->|/propext <-]; rewrite notK. Qed.
@@ -621,12 +621,12 @@ Proof. by rewrite propeqE; split=> [[]|[]]. Qed.
 Lemma andA : associative and.
 Proof. by move=> P Q R; rewrite propeqE; split=> [|]; tauto. Qed.
 
-Lemma forallNE {T} (P : T -> Prop) : (forall x, ~ P x) = ~ exists x, P x.
+Lemma forallNE {T} (P : T -> Prop) : (forall x, ~ P x) = (~ exists x, P x).
 Proof.
 by rewrite propeqE; split => [fP [x /fP]//|nexP x Px]; apply: nexP; exists x.
 Qed.
 
-Lemma existsNE {T} (P : T -> Prop) : (exists x, ~ P x) = ~ forall x, P x.
+Lemma existsNE {T} (P : T -> Prop) : (exists x, ~ P x) = (~ forall x, P x).
 Proof.
 rewrite propeqE; split=> [[x Px] aP //|NaP].
 by apply: contrapT; rewrite -forallNE => aP; apply: NaP => x; apply: contrapT.

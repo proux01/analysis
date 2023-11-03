@@ -140,10 +140,10 @@ Reserved Notation ">?<0" (at level 0, format ">?<0").
 Reserved Notation "!=0" (at level 0, format "!=0").
 Reserved Notation "?=0" (at level 0, format "?=0").
 
-Reserved Notation "x %:sgn" (at level 2, format "x %:sgn").
-Reserved Notation "x %:num" (at level 2, format "x %:num").
-Reserved Notation "x %:posnum" (at level 2, format "x %:posnum").
-Reserved Notation "x %:nngnum" (at level 2, format "x %:nngnum").
+Reserved Notation "x %:sgn" (at level 1, format "x %:sgn").
+Reserved Notation "x %:num" (at level 1, format "x %:num").
+Reserved Notation "x %:posnum" (at level 1, format "x %:posnum").
+Reserved Notation "x %:nngnum" (at level 1, format "x %:nngnum").
 Reserved Notation "[ 'sgn' 'of' x ]" (format "[ 'sgn' 'of'  x ]").
 Reserved Notation "[ 'gt0' 'of' x ]" (format "[ 'gt0' 'of'  x ]").
 Reserved Notation "[ 'lt0' 'of' x ]" (format "[ 'lt0' 'of'  x ]").
@@ -154,8 +154,8 @@ Reserved Notation "[ 'neq0' 'of' x ]" (format "[ 'neq0' 'of'  x ]").
 
 Reserved Notation "{ 'posnum' R }" (at level 0, format "{ 'posnum'  R }").
 Reserved Notation "{ 'nonneg' R }" (at level 0, format "{ 'nonneg'  R }").
-Reserved Notation "x %:pos" (at level 2, format "x %:pos").
-Reserved Notation "x %:nng" (at level 2, format "x %:nng").
+Reserved Notation "x %:pos" (at level 1, format "x %:pos").
+Reserved Notation "x %:nng" (at level 1, format "x %:nng").
 
 Reserved Notation "!! x" (at level 100, only parsing).
 
@@ -816,7 +816,7 @@ Canonical intmul_snum (xnz nnz : nullity) (xr nr : reality)
 
 Lemma inv_snum_subproof (xnz : nullity) (xr : reality)
     (x : {num R & xnz & xr}) :
-  Signed.spec 0 xnz xr (x%:num^-1 : R).
+  Signed.spec 0 xnz xr ((x%:num)^-1 : R).
 Proof.
 by case: xr x => [[[]|]|]//= [r]/=;
    rewrite invr_eq0 ?(invr_ge0, invr_le0) ?realV.

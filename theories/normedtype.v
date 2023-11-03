@@ -102,12 +102,10 @@ Require Import ereal reals signed topology prodnormedzmodule.
 (*                                                                            *)
 (******************************************************************************)
 
-Reserved Notation "f @`[ a , b ]" (at level 20, b at level 9,
-  format "f  @`[ a ,  b ]").
-Reserved Notation "f @`] a , b [" (at level 20, b at level 9,
-  format "f  @`] a ,  b [").
-Reserved Notation "x ^'+" (at level 3, format "x ^'+").
-Reserved Notation "x ^'-" (at level 3, format "x ^'-").
+Reserved Notation "f @`[ a , b ]" (at level 1, format "f  @`[ a ,  b ]").
+Reserved Notation "f @`] a , b [" (at level 1, format "f  @`] a ,  b [").
+Reserved Notation "x ^'+" (at level 1, format "x ^'+").
+Reserved Notation "x ^'-" (at level 1, format "x ^'-").
 Reserved Notation "+oo_ R" (at level 3, format "+oo_ R").
 Reserved Notation "-oo_ R" (at level 3, format "-oo_ R").
 Reserved Notation "[ 'bounded' E | x 'in' A ]"

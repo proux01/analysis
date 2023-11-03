@@ -84,38 +84,38 @@ Import numFieldNormedType.Exports.
 Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
-Reserved Notation "R ^nat" (at level 0).
+Reserved Notation "R ^nat" (at level 1).
 Reserved Notation "a `^ x" (at level 11).
 Reserved Notation "[ 'sequence' E ]_ n"
-  (at level 0, E at level 200, n name, format "[ 'sequence'  E ]_ n").
+  (at level 0, n name, format "[ 'sequence'  E ]_ n").
 Reserved Notation "[ 'series' E ]_ n"
-  (at level 0, E at level 0, n name, format "[ 'series'  E ]_ n").
+  (at level 0, n name, format "[ 'series'  E ]_ n").
 Reserved Notation "[ 'normed' E ]"  (at level 0, format "[ 'normed'  E ]").
 
 Reserved Notation "\big [ op / idx ]_ ( m <= i <oo | P ) F"
-  (at level 36, F at level 36, op, idx at level 10, m, i at level 50,
+  (at level 36, F at level 36, op, idx at level 10, m, i at level 60,
            format "'[' \big [ op / idx ]_ ( m  <=  i  <oo  |  P )  F ']'").
 Reserved Notation "\big [ op / idx ]_ ( m <= i <oo ) F"
-  (at level 36, F at level 36, op, idx at level 10, i, m at level 50,
+  (at level 36, F at level 36, op, idx at level 10, i, m at level 60,
            format "'[' \big [ op / idx ]_ ( m  <=  i  <oo ) '/  '  F ']'").
 Reserved Notation "\big [ op / idx ]_ ( i <oo | P ) F"
-  (at level 36, F at level 36, op, idx at level 10, i at level 50,
+  (at level 36, F at level 36, op, idx at level 10, i at level 60,
            format "'[' \big [ op / idx ]_ ( i  <oo |  P ) '/  '  F ']'").
 Reserved Notation "\big [ op / idx ]_ ( i <oo ) F"
-  (at level 36, F at level 36, op, idx at level 10, i at level 50,
+  (at level 36, F at level 36, op, idx at level 10, i at level 60,
            format "'[' \big [ op / idx ]_ ( i  <oo )  F ']'").
 
 Reserved Notation "\sum_ ( m <= i '<oo' | P ) F"
-  (at level 41, F at level 41, i, m at level 50,
+  (at level 34, F at level 41, i, m at level 60,
            format "'[' \sum_ ( m  <=  i  <oo  |  P ) '/  '  F ']'").
 Reserved Notation "\sum_ ( m <= i '<oo' ) F"
-  (at level 41, F at level 41, i, m at level 50,
+  (at level 34, F at level 41, i, m at level 60,
            format "'[' \sum_ ( m  <=  i  <oo ) '/  '  F ']'").
 Reserved Notation "\sum_ ( i '<oo' | P ) F"
-  (at level 41, F at level 41, i at level 50,
+  (at level 34, F at level 41, i at level 60,
            format "'[' \sum_ ( i  <oo  |  P ) '/  '  F ']'").
 Reserved Notation "\sum_ ( i '<oo' ) F"
-  (at level 41, F at level 41, i at level 50,
+  (at level 34, F at level 41, i at level 60,
            format "'[' \sum_ ( i  <oo ) '/  '  F ']'").
 
 Definition sequence R := nat -> R.
@@ -1153,7 +1153,7 @@ Section exponential_series.
 Variable R : realType.
 Implicit Types x : R.
 
-Definition exp_coeff x := [sequence x ^+ n / n`!%:R]_n.
+Definition exp_coeff x := [sequence x ^+ n / (n`!)%:R]_n.
 
 Local Notation exp := exp_coeff.
 

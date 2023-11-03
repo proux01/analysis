@@ -58,12 +58,12 @@ Local Open Scope classical_set_scope.
 Local Open Scope ring_scope.
 
 Reserved Notation "\int [ mu ]_ ( i 'in' D ) F"
-  (at level 36, F at level 36, mu at level 10, i, D at level 50,
+  (at level 34, F at level 41, i, D at level 60,
   format "'[' \int [ mu ]_ ( i  'in'  D ) '/  '  F ']'").
 Reserved Notation "\int [ mu ]_ i F"
-  (at level 36, F at level 36, mu at level 10, i at level 0,
+  (at level 34, F at level 41, i at level 0,
     right associativity, format "'[' \int [ mu ]_ i '/  '  F ']'").
-Reserved Notation "mu .-integrable" (at level 2, format "mu .-integrable").
+Reserved Notation "mu .-integrable" (at level 1, format "mu .-integrable").
 Reserved Notation "m1 '\x' m2" (at level 40, m2 at next level).
 Reserved Notation "m1 '\x^' m2" (at level 40, m2 at next level).
 
@@ -1023,7 +1023,7 @@ by apply: ereal_sup_ub => /=; exists h.
 Qed.
 
 Local Notation "\int_ ( x 'in' D ) F" := (integral mu D (fun x => F))
-  (at level 36, F at level 36, x, D at level 50,
+  (at level 34, F at level 41, x, D at level 60,
   format "'[' \int_ ( x  'in'  D ) '/  '  F ']'").
 
 Lemma eq_integral D g f : {in D, f =1 g} ->

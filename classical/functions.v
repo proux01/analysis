@@ -923,8 +923,7 @@ HB.instance Definition _ : OCanV _ _ A (f @` A) (funin A f) :=
 
 End funin_surj.
 Notation "[ 'fun' f 'in' A ]" := (funin A f)
-  (at level 0, f at next level,
-   format "[ 'fun'  f  'in'  A ]") : function_scope.
+  (at level 0, format "[ 'fun'  f  'in'  A ]") : function_scope.
 #[global] Hint Resolve set_fun_image : core.
 
 (*********************)

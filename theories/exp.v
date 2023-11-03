@@ -90,7 +90,7 @@ Lemma pseries_diffsN (f : nat -> R) :  pseries_diffs (- f) = -(pseries_diffs f).
 Proof. by apply/funext => i; rewrite /pseries_diffs /= -mulrN. Qed.
 
 Lemma pseries_diffs_inv_fact :
-  pseries_diffs (fun n => (n`!%:R)^-1) = (fun n => (n`!%:R)^-1 : R).
+  pseries_diffs (fun n => ((n`!)%:R)^-1) = (fun n => ((n`!)%:R)^-1 : R).
 Proof.
 apply/funext => i.
 by rewrite /pseries_diffs factS natrM invfM mulrA mulfV ?mul1r.
@@ -332,19 +332,19 @@ by near=> n; apply: ler_sum => [] [|[|i]] _;
           // exp_coeff_ge0.
 Unshelve. all: by end_near. Qed.
 
-Lemma exp_coeffE x : exp_coeff x = (fun n => (fun n => (n`!%:R)^-1) n * x ^+ n).
+Lemma exp_coeffE x : exp_coeff x = (fun n => (fun n => ((n`!)%:R)^-1) n * x ^+ n).
 Proof. by apply/funext => i; rewrite /exp_coeff /= mulrC. Qed.
 
 Import GRing.Theory.
 Local Open Scope ring_scope.
 
 Lemma expRE :
-  expR = fun x => limn (pseries (fun n => (fun n => (n`!%:R)^-1) n) x).
+  expR = fun x => limn (pseries (fun n => (fun n => ((n`!)%:R)^-1) n) x).
 Proof. by apply/funext => x; rewrite /pseries -exp_coeffE. Qed.
 
 Global Instance is_derive_expR x : is_derive x 1 expR (expR x).
 Proof.
-pose s1 n := pseries_diffs (fun n => n`!%:R^-1) n * x ^+ n.
+pose s1 n := pseries_diffs (fun n => (n`!)%:R^-1) n * x ^+ n.
 rewrite expRE /= /pseries (_ : (fun _ => _) = s1); last first.
   by apply/funext => i; rewrite /s1 pseries_diffs_inv_fact.
 apply: (@pseries_snd_diffs _ _ (`|x| + 1)); rewrite /pseries.

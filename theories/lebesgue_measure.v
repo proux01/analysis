@@ -361,7 +361,7 @@ by have [] := subset_set2 Aoo; move=> ->; constructor.
 Qed.
 
 Lemma setCU_Efin (A : set T) (B : set \bar T) : ps_infty B ->
-  ~` (EFin @` A) `&` ~` B = (EFin @` ~` A) `|` ([set -oo%E; +oo%E] `&` ~` B).
+  ~` (EFin @` A) `&` ~` B = (EFin @` (~` A)) `|` ([set -oo%E; +oo%E] `&` ~` B).
 Proof.
 move=> ps_inftyB.
 have -> : ~` (EFin @` A) = EFin @` (~` A) `|` [set -oo; +oo]%E.
@@ -2049,7 +2049,7 @@ have nEcvg x k : exists n, A x -> (~` (E k n)) x.
   apply/not_andP; right; apply/negP; rewrite /h -real_ltNge // distrC.
   by case: (Nk _ Ni) => _/posnumP[?]; apply; exact: ball_norm_center.
 have Ek0 k : (\bigcap_n (E k n)) = set0.
-  rewrite eqEsubset; split => // z /=; suff : (~` \bigcap_n E k n) z by done.
+  rewrite eqEsubset; split => // z /=; suff : (~` (\bigcap_n E k n)) z by done.
   rewrite setC_bigcap; case : (pselect (A z)) => [Az | nAz].
     by have [N /(_ Az) ?] := nEcvg z k; exists N.
   by exists O; rewrite // /E setC_bigcup => n ? [].

@@ -32,8 +32,8 @@ Require Import exp numfun lebesgue_measure lebesgue_integral.
 
 Reserved Notation "'{' 'RV' P >-> R '}'"
   (at level 0, format "'{' 'RV'  P  '>->'  R '}'").
-Reserved Notation "''E_' P [ X ]" (format "''E_' P [ X ]", at level 5).
-Reserved Notation "''V_' P [ X ]" (format "''V_' P [ X ]", at level 5).
+Reserved Notation "''E_' P [ X ]" (at level 0, format "''E_' P [ X ]").
+Reserved Notation "''V_' P [ X ]" (at level 0, format "''V_' P [ X ]").
 Reserved Notation "{ 'dmfun' aT >-> T }"
   (at level 0, format "{ 'dmfun'  aT  >->  T }").
 Reserved Notation "'{' 'dRV' P >-> R '}'"

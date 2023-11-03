@@ -71,8 +71,8 @@ Set Implicit Arguments.
 Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
-Reserved Notation "x %:E" (at level 2, format "x %:E").
-Reserved Notation "x %:dE" (at level 2, format "x %:dE").
+Reserved Notation "x %:E" (at level 1, format "x %:E").
+Reserved Notation "x %:dE" (at level 1, format "x %:dE").
 Reserved Notation "x +? y" (at level 50, format "x  +?  y").
 Reserved Notation "x *? y" (at level 50, format "x  *?  y").
 Reserved Notation "'\bar' x" (at level 2, format "'\bar'  x").

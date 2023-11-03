@@ -135,10 +135,10 @@ Variable R : realType.
 Implicit Types x y : R.
 
 Definition sin_coeff x :=
-  [sequence (odd n)%:R * (-1) ^+ n.-1./2 * x ^+ n / n`!%:R]_n.
+  [sequence (odd n)%:R * (-1) ^+ n.-1./2 * x ^+ n / (n`!)%:R]_n.
 
 Lemma sin_coeffE x : sin_coeff x =
-  (fun n => (fun n => (odd n)%:R * (-1) ^+ n.-1./2 * (n`!%:R)^-1) n * x ^+ n).
+  (fun n => (fun n => (odd n)%:R * (-1) ^+ n.-1./2 * ((n`!)%:R)^-1) n * x ^+ n).
 Proof. by apply/funext => i; rewrite /sin_coeff /= -!mulrA [_ / _]mulrC. Qed.
 
 Lemma sin_coeff_even n x : sin_coeff x n.*2 = 0.
@@ -158,10 +158,10 @@ Qed.
 Definition sin x : R := lim (series (sin_coeff x) @ \oo).
 
 Lemma sinE : sin = fun x =>
-  lim (pseries (fun n => (odd n)%:R * (-1) ^+ n.-1./2 * (n`!%:R)^-1) x @ \oo).
+  lim (pseries (fun n => (odd n)%:R * (-1) ^+ n.-1./2 * ((n`!)%:R)^-1) x @ \oo).
 Proof. by apply/funext => x; rewrite /pseries -sin_coeffE. Qed.
 
-Definition sin_coeff' x (n : nat) := (-1)^n * x ^+ n.*2.+1 / n.*2.+1`!%:R.
+Definition sin_coeff' x (n : nat) := (-1)^n * x ^+ n.*2.+1 / (n.*2.+1`!)%:R.
 
 Lemma sin_coeff'E x n : sin_coeff' x n = sin_coeff x n.*2.+1.
 Proof.
@@ -180,8 +180,8 @@ by rewrite big_nat_recl // big_geq // addr0.
 Qed.
 
 Lemma diffs_sin :
-  pseries_diffs (fun n => (odd n)%:R * (-1) ^+ n.-1./2 * (n`!%:R)^-1) =
-   (fun n => (~~(odd n))%:R * (-1) ^+ n./2 * (n`!%:R)^-1 : R).
+  pseries_diffs (fun n => (odd n)%:R * (-1) ^+ n.-1./2 * ((n`!)%:R)^-1) =
+   (fun n => (~~(odd n))%:R * (-1) ^+ n./2 * ((n`!)%:R)^-1 : R).
 Proof.
 apply/funext => i; rewrite /pseries_diffs /= factS natrM invfM.
 by rewrite [_.+1%:R * _]mulrC -!mulrA [_.+1%:R^-1 * _]mulrC mulfK.
@@ -201,7 +201,7 @@ by move=> i _; rewrite /sin_coeff /= expr0n !(mulr0, mul0r).
 Unshelve. all: by end_near. Qed.
 
 Definition cos_coeff x :=
-  [sequence (~~ odd n)%:R * (-1)^n./2 * x ^+ n / n`!%:R]_n.
+  [sequence (~~ odd n)%:R * (-1)^n./2 * x ^+ n / (n`!)%:R]_n.
 
 Lemma cos_coeff_odd n x : cos_coeff x n.*2.+1 = 0.
 Proof. by rewrite /cos_coeff /= odd_double /= !mul0r. Qed.
@@ -222,7 +222,7 @@ Qed.
 
 Lemma cos_coeffE x :
   cos_coeff x = (fun n => (fun n => (~~(odd n))%:R * (-1) ^+ n./2 *
-                                    (n`!%:R)^-1) n * x ^+ n).
+                                    ((n`!)%:R)^-1) n * x ^+ n).
 Proof.
 by apply/funext => i; rewrite /cos_coeff /= -!mulrA [_ / _]mulrC.
 Qed.
@@ -242,11 +242,11 @@ Definition cos x : R := lim (series (cos_coeff x) @ \oo).
 
 Lemma cosE : cos = fun x =>
   lim (series (fun n =>
-                (fun n => (~~(odd n))%:R * (-1)^+ n./2 * (n`!%:R)^-1) n
+                (fun n => (~~(odd n))%:R * (-1)^+ n./2 * ((n`!)%:R)^-1) n
                 * x ^+ n) @ \oo).
 Proof. by apply/funext => x; rewrite -cos_coeffE. Qed.
 
-Definition cos_coeff' x (n : nat) := (-1)^n * x ^+ n.*2 / n.*2`!%:R.
+Definition cos_coeff' x (n : nat) := (-1)^n * x ^+ n.*2 / (n.*2`!)%:R.
 
 Lemma cos_coeff'E x n : cos_coeff' x n = cos_coeff x n.*2.
 Proof.
@@ -266,8 +266,8 @@ by rewrite funeqE => n; exact: cos_coeff'E.
 Qed.
 
 Lemma diffs_cos :
-  pseries_diffs (fun n => (~~(odd n))%:R * (-1) ^+ n./2 * (n`!%:R)^-1) =
-  (fun n => - ((odd n)%:R * (-1) ^+ n.-1./2 * (n`!%:R)^-1): R).
+  pseries_diffs (fun n => (~~(odd n))%:R * (-1) ^+ n./2 * ((n`!)%:R)^-1) =
+  (fun n => - ((odd n)%:R * (-1) ^+ n.-1./2 * ((n`!)%:R)^-1): R).
 Proof.
 apply/funext => [] [|i] /=.
   by rewrite /pseries_diffs /= !mul0r mulr0 oppr0.
@@ -292,7 +292,7 @@ Unshelve. all: by end_near. Qed.
 Global Instance is_derive_sin x : is_derive x 1 sin (cos x).
 Proof.
 rewrite sinE /=.
-pose s : R^nat := fun n => (odd n)%:R * (-1) ^+ (n.-1)./2 / n`!%:R.
+pose s : R^nat := fun n => (odd n)%:R * (-1) ^+ (n.-1)./2 / (n`!)%:R.
 pose s1 n := pseries_diffs s n * x ^+ n.
 rewrite cosE /= /pseries (_ : (fun _ => _) = s1); last first.
   by apply/funext => i; rewrite /s1 diffs_sin.
@@ -318,7 +318,7 @@ Qed.
 Global Instance is_derive_cos x : is_derive x 1 cos (- (sin x)).
 Proof.
 rewrite cosE /=.
-pose s : R^nat := fun n => (~~ odd n)%:R * (-1) ^+ n./2 / n`!%:R.
+pose s : R^nat := fun n => (~~ odd n)%:R * (-1) ^+ n./2 / (n`!)%:R.
 pose s1 n := pseries_diffs s n * x ^+ n.
 rewrite sinE /= /pseries.
 rewrite (_ : (fun _ => _) = - s1); last first.
