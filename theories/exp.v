@@ -968,11 +968,12 @@ rewrite le_eqVlt => /predU1P[<- b0 p0 q0 _|a0].
   by rewrite mul0r powR0 ?gt_eqF// mul0r add0r divr_ge0 ?powR_ge0 ?ltW.
 rewrite le_eqVlt => /predU1P[<-|b0] p0 q0 pq.
   by rewrite mulr0 powR0 ?gt_eqF// mul0r addr0 divr_ge0 ?powR_ge0 ?ltW.
-have q01 : (q^-1 \in `[0, 1])%R.
+have q01 : (q^-1 \in Num.real) && (q^-1 \in `[0, 1])%R.
+  apply/andP; split; first exact: num_real.
   by rewrite in_itv/= invr_ge0 (ltW q0)/= -pq ler_wpDl// invr_ge0 ltW.
 have ap0 : (0 < a `^ p)%R by rewrite powR_gt0.
 have bq0 : (0 < b `^ q)%R by rewrite powR_gt0.
-have := @concave_ln _ (@Itv.mk _ `[0, 1] _ q01)%R _ _ ap0 bq0.
+have := @concave_ln _ (@Itv.mk _ (@Itv.num_sem _) (Itv.Real `[0, 1]) _ q01)%R _ _ ap0 bq0.
 have pq' : (p^-1 = 1 - q^-1)%R by rewrite -pq addrK.
 rewrite !convRE/= /onem -pq' -[_ <= ln _]ler_expR expRD (mulrC p^-1).
 rewrite ln_powR mulrAC divff ?mul1r ?gt_eqF// (mulrC q^-1).
