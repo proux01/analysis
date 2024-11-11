@@ -920,6 +920,87 @@ Qed. *)
 Canonical mul_inum (xi yi : Itv.t) (x : num_def R xi) (y : num_def R yi) :=
   Itv.mk (mul_inum_subproof x y).
 
+Lemma min_itv_boundl_subproof x1 x2 b1 b2 :
+  (num_itv_bound R b1 <= BLeft x1)%O -> (num_itv_bound R b2 <= BLeft x2)%O ->
+  (num_itv_bound R (Order.min b1 b2) <= BLeft (Order.min x1 x2))%O.
+Proof.
+case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
+- have sb1_le_sb2 := @le_map_itv_bound R _ _ b1_le_b2.
+  by rewrite minElt; case: (x1 < x2)%O => [//|_]; apply: le_trans.
+- have sb2_le_sb1 := @le_map_itv_bound R _ _ b2_le_b1.
+  by rewrite minElt; case: (x1 < x2)%O => [+ _|//]; apply: le_trans.
+Qed.
+
+Lemma min_itv_boundr_subproof (x1 x2 : R) b1 b2 : (x1 >=< x2)%O ->
+  (BRight x1 <= num_itv_bound R b1)%O -> (BRight x2 <= num_itv_bound R b2)%O ->
+  (BRight (Order.min x1 x2) <= num_itv_bound R (Order.min b1 b2))%O.
+Proof.
+move=> x1_cmp_x2; case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
+- have sb1_le_sb2 := @le_map_itv_bound R _ _ b1_le_b2.
+  by case: (comparable_leP x1_cmp_x2) => [//| /ltW ? + _]; apply: le_trans.
+- have sb2_le_sb1 := @le_map_itv_bound R _ _ b2_le_b1.
+  by case: (comparable_leP x1_cmp_x2) => [? _ |//]; apply: le_trans.
+Qed.
+
+Definition min_itv_subdef (x y : interval int) : interval int :=
+  let 'Interval lx ux := x in
+  let 'Interval ly uy := y in
+  Interval (Order.min lx ly) (Order.min ux uy).
+Arguments min_itv_subdef /.
+
+Lemma num_min_inum_subproof (xi yi : Itv.t) (x : num_def R xi) (y : num_def R yi)
+    (r := itv_real2_subdef min_itv_subdef xi yi) :
+  num_spec r (Order.min x%:inum y%:inum).
+Proof.
+apply: itv_real2_subproof (Itv.P x) (Itv.P y).
+case: x y => [x /= _] [y /= _] => {xi yi r} -[lx ux] [ly uy]/=.
+move=> /andP[xr /=/andP[lxx xux]] /andP[yr /=/andP[lyy yuy]].
+rewrite /Itv.num_sem min_real//=; apply/andP; split.
+- exact: min_itv_boundl_subproof.
+- by apply: min_itv_boundr_subproof => //; apply: real_comparable.
+Qed.
+
+Lemma max_itv_boundl_subproof (x1 x2 : R) b1 b2 : (x1 >=< x2)%O ->
+  (num_itv_bound R b1 <= BLeft x1)%O -> (num_itv_bound R b2 <= BLeft x2)%O ->
+  (num_itv_bound R (Order.max b1 b2) <= BLeft (Order.max x1 x2))%O.
+Proof.
+move=> x1_cmp_x2.
+case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
+- case: (comparable_leP x1_cmp_x2) => [//| /ltW ? _ sb2_x2].
+  exact: le_trans sb2_x2 _.
+- case: (comparable_leP x1_cmp_x2) => [? sb1_x1 _ |//].
+  exact: le_trans sb1_x1 _.
+Qed.
+
+Lemma max_itv_boundr_subproof (x1 x2 : R) b1 b2 :
+  (BRight x1 <= num_itv_bound R b1)%O -> (BRight x2 <= num_itv_bound R b2)%O ->
+  (BRight (Order.max x1 x2) <= num_itv_bound R (Order.max b1 b2))%O.
+Proof.
+case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
+- have sb1_le_sb2 := @le_map_itv_bound R _ _ b1_le_b2.
+  by rewrite maxElt; case: ifP => [//|_ ? _]; apply: le_trans sb1_le_sb2.
+- have sb2_le_sb1 := @le_map_itv_bound R _ _ b2_le_b1.
+  by rewrite maxElt; case: ifP => [_ _ ?|//]; apply: le_trans sb2_le_sb1.
+Qed.
+
+Definition max_itv_subdef (x y : interval int) : interval int :=
+  let 'Interval lx ux := x in
+  let 'Interval ly uy := y in
+  Interval (Order.max lx ly) (Order.max ux uy).
+Arguments max_itv_subdef /.
+
+Lemma num_max_inum_subproof (xi yi : Itv.t) (x : num_def R xi) (y : num_def R yi)
+    (r := itv_real2_subdef max_itv_subdef xi yi) :
+  num_spec r (Order.max x%:inum y%:inum).
+Proof.
+apply: itv_real2_subproof (Itv.P x) (Itv.P y).
+case: x y => [x /= _] [y /= _] => {xi yi r} -[lx ux] [ly uy]/=.
+move=> /andP[xr /=/andP[lxx xux]] /andP[yr /=/andP[lyy yuy]].
+rewrite /Itv.num_sem max_real//=; apply/andP; split.
+- by apply: max_itv_boundl_subproof => //; apply: real_comparable.
+- exact: max_itv_boundr_subproof.
+Qed.
+
 End NumDomainInstances.
 
 Section Morph.

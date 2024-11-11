@@ -11,7 +11,7 @@
    bounds of intervals*)
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect all_algebra finmap.
-From mathcomp Require Import mathcomp_extra signed.
+From mathcomp Require Import mathcomp_extra signed itv.
 
 (**md**************************************************************************)
 (* # Extended real numbers $\overline{R}$                                     *)
@@ -3414,6 +3414,146 @@ Module ConstructiveDualAddTheory.
 Export DualAddTheory.
 End ConstructiveDualAddTheory.
 
+Section Itv.
+Context {R : numDomainType}.
+
+Definition ext_num_sem (i : interval int) (x : \bar R) :=
+  (fine x \in Num.real)
+  && let: Interval l u := i in
+     x \in Interval (Itv.map_itv_bound (EFin \o intr) l)
+             (Itv.map_itv_bound (EFin \o intr) u).
+
+Local Notation num_spec := (Itv.spec (@Itv.num_sem _)).
+Local Notation num_def R := (Itv.def (@Itv.num_sem R)).
+Local Notation num_itv_bound R := (@Itv.map_itv_bound _ R intr).
+
+Local Notation ext_num_spec := (Itv.spec ext_num_sem).
+Local Notation ext_num_def := (Itv.def ext_num_sem).
+Local Notation ext_num_itv_bound :=
+  (@Itv.map_itv_bound _ (\bar R) (EFin \o intr)).
+
+Lemma ext_num_num_spec_subproof i (x : R) :
+  ext_num_spec i x%:E = num_spec i x.
+Proof.
+by case: i => [//| [l u]]; do 2![congr (_ && _)]; [case: l | case: u].
+Qed.
+
+Lemma ext_le_map_itv_bound (x y : itv_bound int) :
+  (x <= y)%O -> (ext_num_itv_bound x <= ext_num_itv_bound y)%O.
+Proof.
+case: x y => [xs x [ys y |//] | + [//|]]; last by case.
+rewrite /Order.le/=; case: (_ ==> _) => /=.
+- by rewrite lee_fin ler_int.
+- by rewrite lte_fin ltr_int.
+Qed.
+
+Lemma ext_min_itv_boundl_subproof x1 x2 b1 b2 :
+  (ext_num_itv_bound b1 <= BLeft x1)%O ->
+  (ext_num_itv_bound b2 <= BLeft x2)%O ->
+  (ext_num_itv_bound (Order.min b1 b2) <= BLeft (Order.min x1 x2))%O.
+Proof.
+case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
+- have sb1_le_sb2 := @ext_le_map_itv_bound _ _ b1_le_b2.
+  by rewrite minElt; case: (x1 < x2)%O => [//|_]; apply: le_trans.
+- have sb2_le_sb1 := @ext_le_map_itv_bound _ _ b2_le_b1.
+  by rewrite minElt; case: (x1 < x2)%O => [+ _|//]; apply: le_trans.
+Qed.
+
+Lemma ext_min_itv_boundr_subproof x1 x2 b1 b2 : (x1 >=< x2)%O ->
+  (BRight x1 <= ext_num_itv_bound b1)%O ->
+  (BRight x2 <= ext_num_itv_bound b2)%O ->
+  (BRight (Order.min x1 x2) <= ext_num_itv_bound (Order.min b1 b2))%O.
+Proof.
+move=> x1_cmp_x2; case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
+- have sb1_le_sb2 := @ext_le_map_itv_bound _ _ b1_le_b2.
+  by case: (comparable_leP x1_cmp_x2) => [//| /ltW ? + _]; apply: le_trans.
+- have sb2_le_sb1 := @ext_le_map_itv_bound _ _ b2_le_b1.
+  by case: (comparable_leP x1_cmp_x2) => [? _ |//]; apply: le_trans.
+Qed.
+
+(* TODO: move in constructive_ereal *)
+Lemma fine_real_comparable (x y : \bar R) :
+  fine x \in Num.real -> fine y \in Num.real -> (x >=< y)%O.
+Proof.
+Admitted.
+
+(* TODO backport in constructive_ereal *)
+Lemma real_miney (r : \bar R) : fine r \in Num.real -> mine r +oo%E = r.
+Proof. by case: r => [r rx |//|//]; rewrite minElt real_ltry rx. Qed.
+
+(* TODO backport in constructive_ereal *)
+Lemma real_minNye (r : \bar R) : fine r \in Num.real -> mine -oo%E r = -oo%E.
+Proof. by case: r => [r rx|//|//]; rewrite minElt real_ltNyr rx. Qed.
+
+(* TODO backport in constructive_ereal *)
+Lemma real_maxey (r : \bar R) : fine r \in Num.real -> maxe r +oo%E = +oo%E.
+Proof. by case: r => [r rx |//|//]; rewrite maxElt real_ltry rx. Qed.
+
+(* TODO backport in constructive_ereal *)
+Lemma real_maxNye (r : \bar R) : fine r \in Num.real -> maxe -oo%E r = r.
+Proof. by case: r => [r rx|//|//]; rewrite maxElt real_ltNyr rx. Qed.
+
+Lemma ext_min_inum_subproof (xi yi : Itv.t)
+    (x : ext_num_def xi) (y : ext_num_def yi)
+    (r := itv_real2_subdef min_itv_subdef xi yi) :
+  ext_num_spec r (Order.min x%:inum y%:inum).
+Proof.
+apply: itv_real2_subproof (Itv.P x) (Itv.P y).
+case: x y => [x /= _] [y /= _] => {xi yi r} -[lx ux] [ly uy]/=.
+move=> /andP[xr /=/andP[lxx xux]] /andP[yr /=/andP[lyy yuy]].
+apply/and3P; split.
+- case: x y xr yr {lxx xux lyy yuy} => [x||] [y||]//=.
+  + by move=> ? ?; rewrite -EFin_min/= min_real.
+  + by move=> ? ?; rewrite real_miney.
+  + by move=> ? ?; rewrite real_minNye.
+- exact: ext_min_itv_boundl_subproof.
+- by apply: ext_min_itv_boundr_subproof => //; apply: fine_real_comparable.
+Qed.
+
+Lemma ext_max_itv_boundl_subproof x1 x2 b1 b2 : (x1 >=< x2)%O ->
+  (ext_num_itv_bound b1 <= BLeft x1)%O ->
+  (ext_num_itv_bound b2 <= BLeft x2)%O ->
+  (ext_num_itv_bound (Order.max b1 b2) <= BLeft (Order.max x1 x2))%O.
+Proof.
+move=> x1_cmp_x2.
+case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
+- case: (comparable_leP x1_cmp_x2) => [//| /ltW ? _ sb2_x2].
+  exact: le_trans sb2_x2 _.
+- case: (comparable_leP x1_cmp_x2) => [? sb1_x1 _ |//].
+  exact: le_trans sb1_x1 _.
+Qed.
+
+Lemma ext_max_itv_boundr_subproof x1 x2 b1 b2 :
+  (BRight x1 <= ext_num_itv_bound b1)%O ->
+  (BRight x2 <= ext_num_itv_bound b2)%O ->
+  (BRight (Order.max x1 x2) <= ext_num_itv_bound (Order.max b1 b2))%O.
+Proof.
+case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
+- have sb1_le_sb2 := @ext_le_map_itv_bound _ _ b1_le_b2.
+  by rewrite maxElt; case: ifP => [//|_ ? _]; apply: le_trans sb1_le_sb2.
+- have sb2_le_sb1 := @ext_le_map_itv_bound _ _ b2_le_b1.
+  by rewrite maxElt; case: ifP => [_ _ ?|//]; apply: le_trans sb2_le_sb1.
+Qed.
+
+Lemma ext_max_inum_subproof (xi yi : Itv.t)
+    (x : ext_num_def xi) (y : ext_num_def yi)
+    (r := itv_real2_subdef max_itv_subdef xi yi) :
+  ext_num_spec r (Order.max x%:inum y%:inum).
+Proof.
+apply: itv_real2_subproof (Itv.P x) (Itv.P y).
+case: x y => [x /= _] [y /= _] => {xi yi r} -[lx ux] [ly uy]/=.
+move=> /andP[xr /=/andP[lxx xux]] /andP[yr /=/andP[lyy yuy]].
+apply/and3P; split.
+- case: x y xr yr {lxx xux lyy yuy} => [x||] [y||]//=.
+  + by move=> ? ?; rewrite -EFin_max max_real.
+  + by move=> ? ?; rewrite real_maxey.
+  + by move=> ? ?; rewrite real_maxNye.
+- by apply: ext_max_itv_boundl_subproof => //; apply: fine_real_comparable.
+- exact: ext_max_itv_boundr_subproof.
+Qed.
+
+End Itv.
+
 Definition posnume (R : numDomainType) of phant R := {> 0 : \bar R}.
 Notation "{ 'posnum' '\bar' R }" := (@posnume _ (Phant R)) : type_scope.
 Definition nonnege (R : numDomainType) of phant R := {>= 0 : \bar R}.
@@ -3808,7 +3948,6 @@ apply: le_mono; move=> -[r0 | | ] [r1 | _ | _] //=.
 - by rewrite ltr_pdivrMr ?ltr_wpDr// mul1r ltr_pwDl // ler_norm.
 - rewrite ltr_pdivlMr ?mulN1r ?ltr_wpDr// => _.
   by rewrite ltrNl ltr_pwDl // ler_normr lexx orbT.
-- by rewrite -subr_gt0 opprK.
 Qed.
 
 Definition lt_contract := leW_mono le_contract.
