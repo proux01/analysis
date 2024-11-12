@@ -1,8 +1,7 @@
 (* mathcomp analysis (c) 2020 Inria and AIST. License: CeCILL-C.              *)
 From HB Require Import structures.
-From mathcomp Require Import all_ssreflect fingroup ssralg poly ssrnum. 
+From mathcomp Require Import all_ssreflect fingroup ssralg poly ssrnum.
 From mathcomp Require Import all_classical.
-From mathcomp Require Import signed.
 
 (**md**************************************************************************)
 (* This file equips the product of two normedZmodTypes with a canonical       *)
@@ -37,14 +36,16 @@ Definition norm (x : U * V) : R := Num.max `|x.1| `|x.2|.
 
 Lemma normD x y : norm (x + y) <= norm x + norm y.
 Proof.
-rewrite /norm num_ge_max !(le_trans (ler_normD _ _)) ?lerD//;
-by rewrite comparable_le_max ?lexx ?orbT// real_comparable.
+rewrite /norm comparable_ge_max ?real_comparable ?normr_real//.
+by rewrite !(le_trans (ler_normD _ _)) ?lerD//;
+   rewrite comparable_le_max ?lexx ?orbT ?real_comparable ?normr_real.
 Qed.
 
 Lemma norm_eq0 x : norm x = 0 -> x = 0.
 Proof.
-case: x => x1 x2 /eqP; rewrite eq_le num_ge_max 2!normr_le0 -andbA/=.
-by case/and3P => /eqP -> /eqP ->.
+case: x => x1 x2 /eqP; rewrite eq_le.
+rewrite comparable_ge_max ?real_comparable ?normr_real//.
+by rewrite 2!normr_le0 -andbA/= => /and3P[/eqP-> /eqP->].
 Qed.
 
 Lemma normMn x n : norm (x *+ n) = (norm x) *+ n.

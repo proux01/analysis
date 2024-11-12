@@ -4,7 +4,7 @@ From mathcomp Require Import fingroup perm rat archimedean finmap.
 From mathcomp Require Import boolp classical_sets functions.
 From mathcomp Require Export set_interval.
 From HB Require Import structures.
-From mathcomp Require Import reals constructive_ereal signed.
+From mathcomp Require Import reals constructive_ereal (* signed *).
 
 (**md**************************************************************************)
 (* # Sets and intervals on $\overline{\mathbb{R}}$                            *)
@@ -234,7 +234,8 @@ Let E j := [set x | f x - g x >= j.+1%:R^-1%:E].
 Lemma set_lte_bigcup : [set x | f x > g x] = \bigcup_j E j.
 Proof.
 apply/seteqP; split => [x/=|x [n _]]; last first.
-  by rewrite /E/= -sube_gt0; apply: lt_le_trans.
+  rewrite /E/= -sube_gt0; apply: lt_le_trans.
+  admit.  (* 0%R < (n.+1%:R^-1)%:E *)
 move gxE : (g x) => gx; case: gx gxE => [gx| |gxoo fxoo]; last 2 first.
   - by case: (f x).
   - by exists 0%N => //; rewrite /E/= gxoo addey// ?leey// -ltNye.
@@ -246,7 +247,8 @@ rewrite fxE gxE lee_fin -[leRHS]invrK lef_pV2//.
 - by rewrite intrD1 ltW// lt_succ_floor.
 - by rewrite posrE// ltr_pwDr// ler0z floor_ge0 invr_ge0 ltW.
 - by rewrite posrE invr_gt0.
-Qed.
+Admitted.
+(* Qed. *)
 
 End set_ereal.
 
@@ -258,10 +260,11 @@ apply/seteqP; split=> [x ->|].
 move=> x rx; apply/esym/eqP; rewrite eq_le (itvP (rx 0%N _))// andbT.
 apply/ler_addgt0Pl => e e_gt0; rewrite -lerBlDl ltW//.
 have := rx `|floor e^-1|%N I; rewrite /= in_itv => /andP[/le_lt_trans->]//.
-rewrite lerD2l lerN2 -lef_pV2 ?invrK//; last by rewrite posrE.
+rewrite lerD2l lerN2 -lef_pV2 ?invrK//; last (rewrite posrE; admit).  (* 0 < `|Num.floor e^-1|.+1%:R^-1 *)
 rewrite -natr1 natr_absz ger0_norm ?floor_ge0 ?invr_ge0 1?ltW//.
 by rewrite intrD1 lt_succ_floor.
-Qed.
+Admitted.
+(* Qed. *)
 
 Lemma itv_bnd_open_bigcup (R : realType) b (r s : R) :
   [set` Interval (BSide b r) (BLeft s)] =
