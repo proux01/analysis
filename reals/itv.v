@@ -1105,6 +1105,26 @@ Qed.
 Canonical inv_inum (i : Itv.t) (x : num_def R i) :=
   Itv.mk (inv_inum_subproof x).
 
+Definition exprn_itv_subdef (i : interval int) : interval int :=
+  let 'Interval l u := i in
+  Interval (keep_pos_itv_bound_subdef l) +oo.
+Arguments exprn_itv_subdef /.
+
+Lemma exprn_inum_subproof (i : Itv.t) (x : num_def R i) n
+    (r := itv_real1_subdef exprn_itv_subdef i) :
+  num_spec r (x%:inum ^+ n).
+Proof.
+apply: (@itv_real1_subproof _ _ (fun x => x^+n) _ _ _ _ (Itv.P x)).
+case: x => x /= _ [l u] /and3P[xr /= lx xu].
+rewrite /Itv.num_sem realX//=; apply/andP; split=> [|//].
+apply: (@keep_pos_itv_bound_subproof (fun x => x^+n)) lx.
+- exact: exprn_ge0.
+- exact: exprn_gt0.
+Qed.
+
+Canonical exprn_inum (i : Itv.t) (x : num_def R i) n :=
+  Itv.mk (exprn_inum_subproof x n).
+
 End NumDomainInstances.
 
 Section Morph.
