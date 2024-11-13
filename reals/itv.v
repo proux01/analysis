@@ -1125,6 +1125,13 @@ Qed.
 Canonical exprn_inum (i : Itv.t) (x : num_def R i) n :=
   Itv.mk (exprn_inum_subproof x n).
 
+Lemma norm_inum_subproof {V : normedZmodType R} (x : V) :
+  num_spec (Itv.Real `[0, +oo[) `|x|.
+Proof. by apply/and3P; split; rewrite //= ?normr_real ?bnd_simp ?normr_ge0. Qed.
+
+Canonical norm_inum {V : normedZmodType R} (x : V) :=
+  Itv.mk (norm_inum_subproof x).
+
 End NumDomainInstances.
 
 Section Morph.
