@@ -1001,6 +1001,45 @@ rewrite /Itv.num_sem max_real//=; apply/andP; split.
 - exact: max_itv_boundr_subproof.
 Qed.
 
+Lemma nat_num_spec (i : Itv.t) (n : nat) : nat_spec i n = num_spec i (n%:R : R).
+Proof.
+case: i => [//| [l u]]; rewrite /= /Itv.num_sem realn/=; congr (_ && _).
+- by case: l => [[] l |//]; rewrite !bnd_simp ?pmulrn ?ler_int ?ltr_int.
+- by case: u => [[] u |//]; rewrite !bnd_simp ?pmulrn ?ler_int ?ltr_int.
+Qed.
+
+Lemma natmul_inum_subproof (xi ni : Itv.t) (x : num_def R xi) (n : nat_def ni)
+    (r := itv_real2_subdef mul_itv_subdef xi ni) :
+  num_spec r (x%:inum *+ n%:inum).
+Proof.
+have Pn : num_spec ni (n%:inum%:R : R) by case: n => /= n; rewrite nat_num_spec.
+by rewrite -mulr_natr -[n%:inum%:R]/((Itv.Def Pn)%:inum) mul_inum_subproof.
+Qed.
+
+Canonical natmul_inum (xi ni : Itv.t) (x : num_def R xi) (n : nat_def ni) :=
+  Itv.mk (natmul_inum_subproof x n).
+
+Lemma int_num_spec (i : Itv.t) (n : int) :
+  num_spec i n = num_spec i (n%:~R : R).
+Proof.
+case: i => [//| [l u]]; rewrite /= /Itv.num_sem num_real realz/=.
+congr (andb _ _).
+- by case: l => [[] l |//]; rewrite !bnd_simp intz ?ler_int ?ltr_int.
+- by case: u => [[] u |//]; rewrite !bnd_simp intz ?ler_int ?ltr_int.
+Qed.
+
+Lemma intmul_inum_subproof (xi ii : Itv.t)
+    (x : num_def R xi) (i : num_def int ii)
+    (r := itv_real2_subdef mul_itv_subdef xi ii) :
+  num_spec r (x%:inum *~ i%:inum).
+Proof.
+have Pi : num_spec ii (i%:inum%:~R : R) by case: i => /= i; rewrite int_num_spec.
+by rewrite -mulrzr -[i%:inum%:~R]/((Itv.Def Pi)%:inum) mul_inum_subproof.
+Qed.
+
+Canonical intmul_inum (xi ni : Itv.t) (x : num_def R xi) (n : num_def int ni) :=
+  Itv.mk (intmul_inum_subproof x n).
+
 End NumDomainInstances.
 
 Section Morph.
