@@ -983,9 +983,9 @@ apply: itv_real2_subproof (Itv.P x) (Itv.P y).
 case: x y => [x /= _] [y /= _] => {xi yi r} -[lx ux] [ly uy]/=.
 move=> /andP[xr /=/andP[lxx xux]] /andP[yr /=/andP[lyy yuy]].
 apply/and3P; split; rewrite ?min_real//= map_itv_bound_min real_BSide_min//.
-- apply: (comparable_min_le_min (comparable_num_itv_bound_subproof _ _)) => //.
+- apply: (comparable_min_le_min (comparable_num_itv_bound _ _)) => //.
   exact: real_comparable.
-- apply: (comparable_min_le_min _ (comparable_num_itv_bound_subproof _ _)) => //.
+- apply: (comparable_min_le_min _ (comparable_num_itv_bound _ _)) => //.
   exact: real_comparable.
 Qed.
 
@@ -1003,9 +1003,9 @@ apply: itv_real2_subproof (Itv.P x) (Itv.P y).
 case: x y => [x /= _] [y /= _] => {xi yi r} -[lx ux] [ly uy]/=.
 move=> /andP[xr /=/andP[lxx xux]] /andP[yr /=/andP[lyy yuy]].
 apply/and3P; split; rewrite ?max_real//= map_itv_bound_max real_BSide_max//.
-- apply: (comparable_max_le_max (comparable_num_itv_bound_subproof _ _)) => //.
+- apply: (comparable_max_le_max (comparable_num_itv_bound _ _)) => //.
   exact: real_comparable.
-- apply: (comparable_max_le_max _ (comparable_num_itv_bound_subproof _ _)) => //.
+- apply: (comparable_max_le_max _ (comparable_num_itv_bound _ _)) => //.
   exact: real_comparable.
 Qed.
 
@@ -1053,11 +1053,11 @@ case: i => [//| [l u]]; rewrite /= /Itv.num_sem realn/=; congr (_ && _).
 Qed.
 
 Lemma natmul_inum_subproof (xi ni : Itv.t) (x : num_def R xi) (n : nat_def ni)
-    (r := itv_real2_subdef mul_itv_subdef xi ni) :
+    (r := itv_real2_subdef mul_itv xi ni) :
   num_spec r (x%:num *+ n%:num).
 Proof.
 have Pn : num_spec ni (n%:num%:R : R) by case: n => /= n; rewrite nat_num_spec.
-by rewrite -mulr_natr -[n%:num%:R]/((Itv.Def Pn)%:num) mul_inum_subproof.
+by rewrite -mulr_natr -[n%:num%:R]/((Itv.Def Pn)%:num) mul_spec.
 Qed.
 
 Canonical natmul_inum (xi ni : Itv.t) (x : num_def R xi) (n : nat_def ni) :=
@@ -1074,11 +1074,11 @@ Qed.
 
 Lemma intmul_inum_subproof (xi ii : Itv.t)
     (x : num_def R xi) (i : num_def int ii)
-    (r := itv_real2_subdef mul_itv_subdef xi ii) :
+    (r := itv_real2_subdef mul_itv xi ii) :
   num_spec r (x%:num *~ i%:num).
 Proof.
 have Pi : num_spec ii (i%:num%:~R : R) by case: i => /= i; rewrite int_num_spec.
-by rewrite -mulrzr -[i%:num%:~R]/((Itv.Def Pi)%:num) mul_inum_subproof.
+by rewrite -mulrzr -[i%:num%:~R]/((Itv.Def Pi)%:num) mul_spec.
 Qed.
 
 Canonical intmul_inum (xi ni : Itv.t) (x : num_def R xi) (n : num_def int ni) :=
@@ -1197,6 +1197,65 @@ Canonical norm_inum {V : normedZmodType R} (x : V) :=
   Itv.mk (norm_inum_subproof x).
 
 End NumDomainInstances.
+
+Section RcfInstances.
+Context {R : rcfType}.
+
+Definition sqrt_itv (i : Itv.t) : Itv.t :=
+  match i with
+  | Itv.Top => Itv.Real `[0%Z, +oo[
+  | Itv.Real (Interval l u) =>
+    match l with
+    | BSide b (Posz 0) => Itv.Real (Interval (BSide b 0%Z) +oo)
+    | BSide b (Posz (S _)) => Itv.Real `]0%Z, +oo[
+    | _ => Itv.Real `[0, +oo[
+    end
+  end.
+Arguments sqrt_itv /.
+
+Lemma sqrt_spec (i : Itv.t) (x : num_def R i) (r := sqrt_itv i) :
+  num_spec r (Num.sqrt x%:num).
+Proof.
+have: Itv.num_sem `[0%Z, +oo[ (Num.sqrt x%:num).
+  by apply/and3P; rewrite /= num_real !bnd_simp sqrtr_ge0.
+rewrite {}/r; case: i x => [//| [[bl [l |//] |//] u]] [x /= +] _.
+case: bl l => -[| l] /and3P[xr /= bx _]; apply/and3P; split=> //=;
+  move: bx; rewrite !bnd_simp ?sqrtr_ge0// sqrtr_gt0;
+  [exact: lt_le_trans | exact: le_lt_trans..].
+Qed.
+
+Canonical sqrt_inum (i : Itv.t) (x : num_def R i) := Itv.mk (sqrt_spec x).
+
+End RcfInstances.
+
+Section NumClosedFieldInstances.
+Context {R : numClosedFieldType}.
+
+Definition sqrtC_itv (i : Itv.t) : Itv.t :=
+  match i with
+  | Itv.Top => Itv.Top
+  | Itv.Real (Interval l u) =>
+    match l with
+    | BSide b (Posz _) => Itv.Real (Interval (BSide b 0%Z) +oo)
+    | _ => Itv.Top
+    end
+  end.
+Arguments sqrtC_itv /.
+
+Lemma sqrtC_spec (i : Itv.t) (x : num_def R i) (r := sqrtC_itv i) :
+  num_spec r (sqrtC x%:num).
+Proof.
+rewrite {}/r; case: i x => [//| [l u] [x /=/and3P[xr /= lx xu]]].
+case: l lx => [bl [l |//] |[]//] lx; apply/and3P; split=> //=.
+  by apply: real_sqrtC; case: bl lx => /[!bnd_simp] [|/ltW]; apply: le_trans.
+case: bl lx => /[!bnd_simp] lx.
+- by rewrite sqrtC_ge0; apply: le_trans lx.
+- by rewrite sqrtC_gt0; apply: le_lt_trans lx.
+Qed.
+
+Canonical sqrtC_inum (i : Itv.t) (x : num_def R i) := Itv.mk (sqrtC_spec x).
+
+End NumClosedFieldInstances.
 
 End Instances.
 Export (canonicals) Instances.
