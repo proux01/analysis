@@ -1134,6 +1134,26 @@ Canonical norm_inum {V : normedZmodType R} (x : V) :=
 
 End NumDomainInstances.
 
+Section RcfInstances.
+Context {R : rcfType}.
+
+Lemma sqrt_inum_subproof (i : Itv.t) (x : num_def R i)
+    (r := itv_real1_subdef exprn_itv_subdef i) :
+  num_spec r (Num.sqrt x%:inum).
+Proof.
+apply: itv_real1_subproof (Itv.P x).
+case: x => x /= _ [l u] /and3P[xr /= lx xu].
+rewrite /Itv.num_sem num_real/=; apply/andP; split=> [|//].
+apply: keep_pos_itv_bound_subproof lx.
+- by move=> ?; rewrite sqrtr_ge0.
+- by move=> ?; rewrite sqrtr_gt0.
+Qed.
+
+Canonical sqrt_inum (i : Itv.t) (x : num_def R i) :=
+  Itv.mk (sqrt_inum_subproof x).
+
+End RcfInstances.
+
 Section Morph.
 Context {R : numDomainType} {i : Itv.t}.
 Local Notation nR := (num_def R i).
