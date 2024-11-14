@@ -1154,6 +1154,117 @@ Canonical sqrt_inum (i : Itv.t) (x : num_def R i) :=
 
 End RcfInstances.
 
+Section NatInstances.
+Local Open Scope nat_scope.
+Implicit Type (n : nat).
+
+Lemma zeron_inum_subproof : nat_spec (Itv.Real `[0, 0]%Z) 0.
+Proof. by []. Qed.
+
+Canonical zeron_snum := Itv.mk zeron_inum_subproof.
+
+Lemma succn_inum_subproof n : nat_spec (Itv.Real `[1, +oo[%Z) n.+1.
+Proof. by []. Qed.
+
+Canonical succn_inum n := Itv.mk (succn_inum_subproof n).
+
+Lemma addn_inum_subproof (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi)
+    (r := itv_real2_subdef add_itv_subdef xi yi) :
+  nat_spec r (x%:inum + y%:inum).
+Proof.
+have Px : num_spec xi (x%:inum%:R : int).
+  by case: x => /= x; rewrite (@nat_num_spec int).
+have Py : num_spec yi (y%:inum%:R : int).
+  by case: y => /= y; rewrite (@nat_num_spec int).
+rewrite (@nat_num_spec int) natrD.
+rewrite -[x%:inum%:R]/((Itv.Def Px)%:inum) -[y%:inum%:R]/((Itv.Def Py)%:inum).
+exact: add_inum_subproof.
+Qed.
+
+Canonical addn_inum (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi) :=
+  Itv.mk (addn_inum_subproof x y).
+
+Lemma double_inum_subproof (i : Itv.t) (n : nat_def i)
+    (r := itv_real2_subdef add_itv_subdef i i) :
+  nat_spec r (n%:inum.*2).
+Proof. by rewrite -addnn addn_inum_subproof. Qed.
+
+Canonical double_inum (i : Itv.t) (x : nat_def i) :=
+  Itv.mk (double_inum_subproof x).
+
+Lemma muln_inum_subproof (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi)
+    (r := itv_real2_subdef mul_itv_subdef xi yi) :
+  nat_spec r (x%:inum * y%:inum).
+Proof.
+have Px : num_spec xi (x%:inum%:R : int).
+  by case: x => /= x; rewrite (@nat_num_spec int).
+have Py : num_spec yi (y%:inum%:R : int).
+  by case: y => /= y; rewrite (@nat_num_spec int).
+rewrite (@nat_num_spec int) natrM.
+rewrite -[x%:inum%:R]/((Itv.Def Px)%:inum) -[y%:inum%:R]/((Itv.Def Py)%:inum).
+exact: mul_inum_subproof.
+Qed.
+
+Canonical muln_inum (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi) :=
+  Itv.mk (muln_inum_subproof x y).
+
+Lemma expn_inum_subproof (i : Itv.t) (x : nat_def i) n
+    (r := itv_real1_subdef exprn_itv_subdef i) :
+  nat_spec r (x%:inum ^ n).
+Proof.
+have Px : num_spec i (x%:inum%:R : int).
+  by case: x => /= x; rewrite (@nat_num_spec int).
+rewrite (@nat_num_spec int) natrX -[x%:inum%:R]/((Itv.Def Px)%:inum).
+exact: exprn_inum_subproof.
+Qed.
+
+Canonical expn_inum (i : Itv.t) (x : nat_def i) n :=
+  Itv.mk (expn_inum_subproof x n).
+
+(* TODO: move in mathcomp_extra *)
+Lemma natr_min (R' : numDomainType) (m n : nat) :
+  (Order.min m n)%:R = Order.min m%:R n%:R :> R'.
+Proof. by rewrite !minElt ltr_nat /Order.lt/= -fun_if. Qed.
+
+(* TODO: move in mathcomp_extra *)
+Lemma natr_max (R' : numDomainType) (m n : nat) :
+  (Order.max m n)%:R = Order.max m%:R n%:R :> R'.
+Proof. by rewrite !maxElt ltr_nat /Order.lt/= -fun_if. Qed.
+
+Lemma minn_inum_subproof (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi)
+    (r := itv_real2_subdef min_itv_subdef xi yi) :
+  nat_spec r (minn x%:inum y%:inum).
+Proof.
+have Px : num_spec xi (x%:inum%:R : int).
+  by case: x => /= x; rewrite (@nat_num_spec int).
+have Py : num_spec yi (y%:inum%:R : int).
+  by case: y => /= y; rewrite (@nat_num_spec int).
+rewrite (@nat_num_spec int) -minEnat natr_min.
+rewrite -[x%:inum%:R]/((Itv.Def Px)%:inum) -[y%:inum%:R]/((Itv.Def Py)%:inum).
+exact: num_min_inum_subproof.
+Qed.
+
+Canonical minn_inum (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi) :=
+  Itv.mk (minn_inum_subproof x y).
+
+Lemma maxn_inum_subproof (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi)
+    (r := itv_real2_subdef max_itv_subdef xi yi) :
+  nat_spec r (maxn x%:inum y%:inum).
+Proof.
+have Px : num_spec xi (x%:inum%:R : int).
+  by case: x => /= x; rewrite (@nat_num_spec int).
+have Py : num_spec yi (y%:inum%:R : int).
+  by case: y => /= y; rewrite (@nat_num_spec int).
+rewrite (@nat_num_spec int) -maxEnat natr_max.
+rewrite -[x%:inum%:R]/((Itv.Def Px)%:inum) -[y%:inum%:R]/((Itv.Def Py)%:inum).
+exact: num_max_inum_subproof.
+Qed.
+
+Canonical maxn_inum (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi) :=
+  Itv.mk (maxn_inum_subproof x y).
+
+End NatInstances.
+
 Section Morph.
 Context {R : numDomainType} {i : Itv.t}.
 Local Notation nR := (num_def R i).
