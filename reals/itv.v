@@ -1353,6 +1353,20 @@ Canonical nat_min_max_typ := MinMaxTyp minn_spec maxn_spec.
 
 End NatInstances.
 
+Section IntInstances.
+
+Lemma Posz_spec n : num_spec (Itv.Real `[0, +oo[) (Posz n).
+Proof. by apply/and3P; rewrite /= num_real !bnd_simp. Qed.
+
+Canonical Posz_inum n := Itv.mk (Posz_spec n).
+
+Lemma Negz_spec n : num_spec (Itv.Real `]-oo, -1]) (Negz n).
+Proof. by apply/and3P; rewrite /= num_real !bnd_simp. Qed.
+
+Canonical Negz_inum n := Itv.mk (Negz_spec n).
+
+End IntInstances.
+
 End Instances.
 Export (canonicals) Instances.
 
