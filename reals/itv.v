@@ -1265,6 +1265,20 @@ Canonical maxn_inum (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi) :=
 
 End NatInstances.
 
+Section IntInstances.
+
+Lemma Posz_inum_subproof n : num_spec (Itv.Real `[0, +oo[) (Posz n).
+Proof. by apply/and3P; rewrite /= num_real !bnd_simp. Qed.
+
+Canonical Posz_snum n := Itv.mk (Posz_inum_subproof n).
+
+Lemma Negz_inum_subproof n : num_spec (Itv.Real `]-oo, -1]) (Negz n).
+Proof. by apply/and3P; rewrite /= num_real !bnd_simp. Qed.
+
+Canonical Negz_snum n := Itv.mk (Negz_inum_subproof n).
+
+End IntInstances.
+
 Section Morph.
 Context {R : numDomainType} {i : Itv.t}.
 Local Notation nR := (num_def R i).
