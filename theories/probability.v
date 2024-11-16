@@ -5,7 +5,7 @@ From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
 From mathcomp Require Import cardinality fsbigop.
 From HB Require Import structures.
 From mathcomp Require Import exp numfun lebesgue_measure lebesgue_integral.
-From mathcomp Require Import reals ereal signed topology normedtype sequences.
+From mathcomp Require Import reals ereal trucmuche topology normedtype sequences.
 From mathcomp Require Import esum measure exp numfun lebesgue_measure.
 From mathcomp Require Import lebesgue_integral kernel.
 

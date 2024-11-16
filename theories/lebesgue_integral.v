@@ -3,7 +3,7 @@ From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
 From mathcomp Require Import archimedean.
 From mathcomp Require Import boolp classical_sets functions.
-From mathcomp Require Import cardinality fsbigop signed reals ereal topology.
+From mathcomp Require Import cardinality fsbigop trucmuche reals ereal topology.
 From mathcomp Require Import normedtype sequences real_interval esum measure.
 From mathcomp Require Import lebesgue_measure numfun realfun function_spaces.
 

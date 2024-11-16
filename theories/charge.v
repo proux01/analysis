@@ -4,7 +4,7 @@ From mathcomp Require Import finmap fingroup perm rat.
 From mathcomp Require Import mathcomp_extra boolp classical_sets cardinality.
 From mathcomp Require Import functions fsbigop set_interval.
 From HB Require Import structures.
-From mathcomp Require Import reals ereal signed topology numfun normedtype.
+From mathcomp Require Import reals ereal trucmuche topology numfun normedtype.
 From mathcomp Require Import sequences esum measure realfun lebesgue_measure.
 From mathcomp Require Import lebesgue_integral.
 

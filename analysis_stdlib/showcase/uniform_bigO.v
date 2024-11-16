@@ -3,7 +3,7 @@ From Coq Require Import Reals.
 From Coq Require Import ssreflect ssrfun ssrbool.
 From mathcomp Require Import ssrnat eqtype choice fintype bigop order ssralg ssrnum.
 From mathcomp Require Import boolp reals Rstruct_topology ereal.
-From mathcomp Require Import classical_sets signed topology normedtype landau.
+From mathcomp Require Import classical_sets trucmuche topology normedtype landau.
 
 Set Implicit Arguments.
 Unset Strict Implicit.

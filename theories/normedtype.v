@@ -5,7 +5,7 @@ From mathcomp Require Import rat interval zmodp vector fieldext falgebra.
 From mathcomp Require Import boolp classical_sets functions.
 From mathcomp Require Import archimedean.
 From mathcomp Require Import cardinality set_interval ereal reals.
-From mathcomp Require Import signed topology prodnormedzmodule function_spaces.
+From mathcomp Require Import trucmuche topology prodnormedzmodule function_spaces.
 From mathcomp Require Export real_interval separation_axioms.
 
 (**md**************************************************************************)
