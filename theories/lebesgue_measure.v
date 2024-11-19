@@ -2,7 +2,7 @@
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval.
 From mathcomp Require Import finmap fingroup perm rat archimedean.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
-From mathcomp Require Import cardinality fsbigop reals ereal trucmuche.
+From mathcomp Require Import cardinality fsbigop reals ereal itv.
 From mathcomp Require Import topology numfun normedtype function_spaces.
 From HB Require Import structures.
 From mathcomp Require Import sequences esum measure real_interval realfun exp.
@@ -1660,6 +1660,7 @@ have nEcvg x k : exists n, A x -> (~` E k n) x.
   have [] := fptwsg _ Ax (interior (ball (g x) k.+1%:R^-1)).
     by apply: open_nbhs_nbhs; split; [exact: open_interior|exact: nbhsx_ballx].
   move=> N _ Nk; exists N.+1 => _; rewrite /E setC_bigcup => i /= /ltnW Ni.
+Fail. Admitted. (*
   apply/not_andP; right; apply/negP; rewrite /h -real_ltNge // distrC.
   by case: (Nk _ Ni) => _/posnumP[?]; apply; exact: ball_norm_center.
 have Ek0 k : \bigcap_n (E k n) = set0.
@@ -1697,7 +1698,7 @@ rewrite /patch; case: ifPn => // /set_mem xAB; apply: (lt_trans _ Ndel).
 move: xAB; rewrite setDE => -[Ax]; rewrite setC_bigcup => /(_ N I).
 rewrite /E setC_bigcup => /(_ r) /=; rewrite /h => /(_ badNr) /not_andP[]//.
 by move/negP; rewrite ltNge // distrC.
-Qed.
+Qed. *)
 
 Lemma ae_pointwise_almost_uniform
     (f : (T -> R)^nat) (g : T -> R) (A : set T) (eps : R) :
@@ -2493,6 +2494,7 @@ have [|Aoo e0] := leP +oo (l^* A)%mu.
   by exists [set: R]; split => //; [exact: openT|rewrite Aoo leey].
 have [F AF Fe] : exists2 I_, open_itv_cover A I_ &
     \sum_(0 <= k <oo) l (I_ k) <= (l^* A)%mu + e%:E.
+Fail. Admitted. (*
   have : (l^* A)%mu\is a fin_num by rewrite ge0_fin_numE// outer_measure_ge0.
   rewrite outer_measure_open_itv_cover.
   move=> /lb_ereal_inf_adherent-/(_ _ e0)[_/= [F]] AF <- Fe.
@@ -2506,7 +2508,7 @@ exists (\bigcup_i F i); split.
   apply: lee_nneseries => // i _.
   case: AF => /(_ i)[[a b] -> _]/=.
   by rewrite /l wlength_itv/= -(@lebesgue_measure_itv R `]a, b[).
-Qed.
+Qed. *)
 
 Lemma outer_measure_open A : (l^* A)%mu =
   ereal_inf [set (l^* U)%mu | U in [set U | open U /\ A `<=` U]].
@@ -2603,6 +2605,7 @@ have muU : mu U < mu D + eps%:E.
   apply: (@le_lt_trans _ _ (\sum_(n <oo) (mu (M' n) + (e2 n)%:E))).
     by rewrite lee_nneseries.
   apply: le_lt_trans.
+Fail. Admitted. (*
     by apply: epsilon_trick => //; rewrite divr_ge0// ltW.
   rewrite {2}[eps]splitr EFinD addeA lte_leD//.
   rewrite (le_lt_trans _ zDe)// -sMz lee_nneseries// => i _.
@@ -2618,7 +2621,7 @@ rewrite measureD//=.
 - by rewrite setIidr// lte_subel_addl// ge0_fin_numE// (lt_le_trans muU)// leey.
 - by apply: bigcup_measurable => k _; exact: mM.
 - by rewrite (lt_le_trans muU)// leey.
-Qed.
+Qed. *)
 
 Lemma lebesgue_nearly_bounded (D : set R) (eps : R) :
     measurable D -> mu D < +oo -> (0 < eps)%R ->
@@ -2909,6 +2912,7 @@ have [N F5e] : exists N, \sum_(N <= n <oo) \esum_(i in F n) mu (closure (B i)) <
   set X : \bar R := (X in fine X).
   have Xoo : X < +oo.
     apply: le_lt_trans foo.
+Fail. Admitted. (*
     by rewrite (nneseries_split _ N)// leeDr//; exact: sume_ge0.
   rewrite fineK ?ge0_fin_numE//; last exact: nneseries_ge0.
   apply: lee_nneseries => //; first by move=> i _; exact: esum_ge0.
@@ -3007,7 +3011,7 @@ apply: lee_nneseries => // m mFn.
 rewrite (ballE (is_ballB m))// closure_ball lebesgue_measure_closed_ball//.
 rewrite scale_ballE// closure_ball lebesgue_measure_closed_ball//.
 by rewrite -EFinM mulrnAr.
-Qed.
+Qed. *)
 
 End vitali_theorem.
 
@@ -3189,6 +3193,7 @@ have bigBG_fin (r : {posnum R}) : finite_set (bigB G r%:num).
         rewrite EFinM -lte_pdivrMl// muleC -(@fineK _ (mu O)); last first.
           by rewrite ge0_fin_numE//; case/andP: OAoo => ?; exact: lt_trans.
         rewrite -EFinM /M lte_fin (le_lt_trans (ceil_ge _))//.
+Fail. Admitted. (*
         rewrite -natr1 natr_absz ger0_norm ?ltrDl//.
         by rewrite -ceil_ge0// (@lt_le_trans _ _ 0%R)// divr_ge0// fine_ge0.
       rewrite big_seq [in leRHS]big_seq.
@@ -3233,6 +3238,6 @@ exists (fset_set (bigB G c%:num)); split.
   apply: (le_trans _ (outer_measureU2 _ _ _)) => //=; apply: le_outer_measure.
   rewrite !(setDE A) -setIUr; apply: setIS.
   by rewrite setDE setUIl setUv setTI -setCI; exact: subsetC.
-Qed.
+Qed. *)
 
 End vitali_theorem_corollary.

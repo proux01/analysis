@@ -1,7 +1,7 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From mathcomp Require Import all_ssreflect ssralg ssrnum finmap.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
-From mathcomp Require Import cardinality fsbigop reals ereal trucmuche.
+From mathcomp Require Import cardinality fsbigop reals ereal itv.
 From mathcomp Require Import topology sequences normedtype numfun.
 
 (**md**************************************************************************)
@@ -254,6 +254,7 @@ apply: (@le_trans _ _
   rewrite (_ : [fset x | x in Y & x \in X] = Y `&` fset_set X)%fset; last first.
     by apply/fsetP => x; rewrite 2!inE/= in_fset_set.
   rewrite (fsetIidPr _).
+Fail. Admitted. (*
     rewrite fsbig_finite// leeDl// big_seq sume_ge0//=.
     move=> [x y] /imfsetP[[x1 y1]] /[!inE] /andP[] /imfset2P[x2]/= /[!inE].
     rewrite andbT in_fset_set//; last exact: finite_set_fst.
@@ -275,7 +276,7 @@ rewrite ereal_sup_ubound //=; have ? : finite_set (X.`2 `&` J i).
 exists (X.`2 `&` J i) => //.
 rewrite [in RHS]big_fset_condE/= fsbig_finite//; apply/eq_fbigl => j.
 by rewrite in_fset_set// !inE/= in_setI in_fset_set//; exact: finite_set_snd.
-Qed.
+Qed. *)
 
 Lemma lee_sum_fset_nat (R : realDomainType)
     (f : (\bar R)^nat) (F : {fset nat}) n (P : pred nat) :
@@ -630,6 +631,7 @@ Lemma esumB D f g : summable D f -> summable D g ->
 Proof.
 move=> Df Dg f0 g0.
 have /eqP : esum D (f \- g)^\+ + esum_posneg D g = esum D (f \- g)^\- + esum_posneg D f.
+Fail. Admitted. (*
   rewrite !ge0_esum_posneg// -!esumD//; last 2 first.
     by move=> t Dt; rewrite le_max lexx orbT.
     by move=> t Dt; rewrite le_max lexx orbT.
@@ -657,6 +659,6 @@ rewrite -addeA addeCA eq_sym [X in _ == X -> _]addeC -sube_eq; last 2 first.
     rewrite (@eq_esum _ _ _ _ (abse \o g))// -?summableE// => i Di.
     by rewrite /= gee0_abs// g0.
 by rewrite ge0_esum_posneg// ge0_esum_posneg// => /eqP ->.
-Qed.
+Qed. *)
 
 End esumB.

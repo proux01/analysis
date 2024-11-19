@@ -67,15 +67,31 @@ Reserved Notation "{ 'itv' R & i }"
   (at level 0, R at level 200, i at level 200, format "{ 'itv'  R  &  i }").
 Reserved Notation "{ 'i01' R }"
   (at level 0, R at level 200, format "{ 'i01'  R }").
+Reserved Notation "{ 'posnum' R }" (at level 0, format "{ 'posnum'  R }").
+Reserved Notation "{ 'nonneg' R }" (at level 0, format "{ 'nonneg'  R }").
 
 Reserved Notation "x %:itv" (at level 2, format "x %:itv").
 Reserved Notation "x %:i01" (at level 2, format "x %:i01").
+Reserved Notation "x %:pos" (at level 2, format "x %:pos").
+Reserved Notation "x %:nng" (at level 2, format "x %:nng").
 Reserved Notation "x %:inum" (at level 2, format "x %:inum").
+Reserved Notation "x %:num" (at level 2, format "x %:num").
+Reserved Notation "x %:posnum" (at level 2, format "x %:posnum").
+Reserved Notation "x %:nngnum" (at level 2, format "x %:nngnum").
+
 Reserved Notation "[ 'itv' 'of' x ]" (format "[ 'itv' 'of'  x ]").
 Reserved Notation "[ 'lb' 'of' x ]" (format "[ 'lb' 'of'  x ]").
 Reserved Notation "[ 'ub' 'of' x ]" (format "[ 'ub' 'of'  x ]").
 Reserved Notation "[ 'lbe' 'of' x ]" (format "[ 'lbe' 'of'  x ]").
 Reserved Notation "[ 'ube' 'of' x ]" (format "[ 'ube' 'of'  x ]").
+Reserved Notation "[ 'gt0' 'of' x ]" (format "[ 'gt0' 'of'  x ]").
+Reserved Notation "[ 'lt0' 'of' x ]" (format "[ 'lt0' 'of'  x ]").
+Reserved Notation "[ 'ge0' 'of' x ]" (format "[ 'ge0' 'of'  x ]").
+Reserved Notation "[ 'le0' 'of' x ]" (format "[ 'le0' 'of'  x ]").
+Reserved Notation "[ 'cmp0' 'of' x ]" (format "[ 'cmp0' 'of'  x ]").
+Reserved Notation "[ 'neq0' 'of' x ]" (format "[ 'neq0' 'of'  x ]").
+
+Reserved Notation "!! x" (at level 100, only parsing).
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -85,6 +101,13 @@ Import GRing.Theory Num.Theory.
 
 Local Open Scope ring_scope.
 Local Open Scope order_scope.
+
+Notation "!! x" := (ltac:(refine x)) (only parsing).
+(* infer class to help typeclass inference on the fly *)
+Class infer (P : Prop) := Infer : P.
+#[export] Hint Mode infer ! : typeclass_instances.
+#[export] Hint Extern 0 (infer _) => (exact) : typeclass_instances.
+Lemma inferP (P : Prop) : P -> infer P. Proof. by []. Qed.
 
 Module Itv.
 
@@ -137,14 +160,25 @@ Definition num_sem (R : numDomainType) (i : interval int) (x : R) : bool :=
 
 Definition nat_sem (i : interval int) (x : nat) : bool := Posz x \in i.
 
+Definition posnum (R : numDomainType) of phant R :=
+  def (@num_sem R) (Real `]0, +oo[).
+
+Definition nonneg (R : numDomainType) of phant R :=
+  def (@num_sem R) (Real `[0, +oo[).
+
 Module Exports.
 Arguments r {T sem i}.
 Notation "{ 'itv' R & i }" := (def (@num_sem R) (Itv.Real i%Z)) : type_scope.
 Notation "{ 'i01' R }" := {itv R & `[0, 1]} : type_scope.
+Notation "{ 'posnum' R }" := (@posnum _ (Phant R))  : ring_scope.
+Notation "{ 'nonneg' R }" := (@nonneg _ (Phant R))  : ring_scope.
 Notation "x %:itv" := (from (Phantom _ x)) : ring_scope.
 Notation "[ 'itv' 'of' x ]" := (fromP (Phantom _ x)) : ring_scope.
 Notation inum := r.
-Notation "x %:inum" := (r x) : ring_scope.
+Notation "x %:inum" := (r x) (only parsing) : ring_scope.
+Notation "x %:num" := (r x) : ring_scope.
+Notation "x %:posnum" := (@r _ _ (Itv.Real `]0%Z, +oo[) x) : ring_scope.
+Notation "x %:nngnum" := (@r _ _ (Itv.Real `[0%Z, +oo[) x) : ring_scope.
 End Exports.
 End Itv.
 Export Itv.Exports.
@@ -160,9 +194,24 @@ Section POrder.
 Context d (T : porderType d) (f : interval int -> T -> bool) (i : Itv.t).
 Local Notation itv := (Itv.def f i).
 HB.instance Definition _ := [isSub for @Itv.r T f i].
-HB.instance Definition _ := [Choice of itv by <:].
-HB.instance Definition _ := [SubChoice_isSubPOrder of itv by <: with d].
+HB.instance Definition _ : Order.POrder d itv := [POrder of itv by <:].
 End POrder.
+
+Section Order.
+Variables (R : numDomainType) (i : interval int).
+Local Notation nR := (num_def R (Itv.Real i)).
+
+Lemma signed_le_total : total (<=%O : rel nR).
+Proof.
+move=> x y; apply: real_comparable.
+- by case: x => [x /=/andP[]].
+- by case: y => [y /=/andP[]].
+Qed.
+
+HB.instance Definition _ := Order.POrder_isTotal.Build ring_display nR
+  signed_le_total.
+
+End Order.
 
 Lemma top_typ_subproof T f (x : T) : Itv.spec f Itv.Top x.
 Proof. by []. Qed.
@@ -260,61 +309,81 @@ Qed.
 
 Definition empty_itv := Itv.Real `[Posz 1, Posz 0].
 
-Lemma itv_bottom x : unify_itv i empty_itv -> False.
+Lemma bottom x : unify_itv i empty_itv -> False.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= => /andP[] /le_trans /[apply]; rewrite ler10.
 Qed.
 
-Lemma itv_gt0 x : unify_itv i (Itv.Real `]Posz 0, +oo[) -> 0%R < x%:inum :> R.
+Lemma gt0 x : unify_itv i (Itv.Real `]Posz 0, +oo[) -> 0%R < x%:inum :> R.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_].
 by rewrite /= in_itv/= andbT.
 Qed.
 
-Lemma itv_le0F x : unify_itv i (Itv.Real `]Posz 0, +oo[) ->
+Lemma le0F x : unify_itv i (Itv.Real `]Posz 0, +oo[) ->
   x%:inum <= 0%R :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= andbT => /lt_geF.
 Qed.
 
-Lemma itv_lt0 x : unify_itv i (Itv.Real `]-oo, Posz 0[) -> x%:inum < 0%R :> R.
+Lemma lt0 x : unify_itv i (Itv.Real `]-oo, Posz 0[) -> x%:inum < 0%R :> R.
 Proof.
 by case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=; rewrite in_itv.
 Qed.
 
-Lemma itv_ge0F x : unify_itv i (Itv.Real `]-oo, Posz 0[) ->
+Lemma ge0F x : unify_itv i (Itv.Real `]-oo, Posz 0[) ->
   0%R <= x%:inum :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= => /lt_geF.
 Qed.
 
-Lemma itv_ge0 x : unify_itv i (Itv.Real `[Posz 0, +oo[) -> 0%R <= x%:inum :> R.
+Lemma ge0 x : unify_itv i (Itv.Real `[Posz 0, +oo[) -> 0%R <= x%:inum :> R.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= andbT.
 Qed.
 
-Lemma itv_lt0F x : unify_itv i (Itv.Real `[Posz 0, +oo[) ->
+Lemma lt0F x : unify_itv i (Itv.Real `[Posz 0, +oo[) ->
   x%:inum < 0%R :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= andbT => /le_gtF.
 Qed.
 
-Lemma itv_le0 x : unify_itv i (Itv.Real `]-oo, Posz 0]) -> x%:inum <= 0%R :> R.
+Lemma le0 x : unify_itv i (Itv.Real `]-oo, Posz 0]) -> x%:inum <= 0%R :> R.
 Proof.
 by case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=; rewrite in_itv.
 Qed.
 
-Lemma itv_gt0F x : unify_itv i (Itv.Real `]-oo, Posz 0]) ->
+Lemma gt0F x : unify_itv i (Itv.Real `]-oo, Posz 0]) ->
   0%R < x%:inum :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= => /le_gtF.
 Qed.
+
+Lemma cmp0 x :
+  unify (fun xi _ => if xi is Itv.Real _ then true else false)
+    i (Itv.Real `]-oo, +oo[) -> (0 >=< x%:num).
+Proof. by case: i x => [//| i' [x /=/andP[]]]. Qed.
+
+Lemma neq0 x :
+  unify (fun ix iy => negb (Itv.sub ix iy)) (Itv.Real `[0%Z, 0%Z]) i ->
+  x%:inum != 0 :> R.
+Proof.
+case: i x => [//| [l u] [x /= Px]]; apply: contra => /eqP x0 /=.
+move: Px; rewrite x0 => /and3P[_ /= l0 u0]; apply/andP; split.
+- by case: l l0 => [[] l /= |//]; rewrite !bnd_simp ?lerz0 ?ltrz0.
+- by case: u u0 => [[] u /= |//]; rewrite !bnd_simp ?ler0z ?ltr0z.
+Qed.
+
+Lemma eq0F x :
+  unify (fun ix iy => negb (Itv.sub ix iy)) (Itv.Real `[0%Z, 0%Z]) i ->
+  x%:inum == 0 :> R = false.
+Proof. by move=> u; apply/negbTE/neq0. Qed.
 
 Lemma lt1 x : unify_itv i (Itv.Real `]-oo, Posz 1[) -> x%:inum < 1%R :> R.
 Proof.
@@ -349,34 +418,68 @@ Definition widen_itv x i' (uni : unify_itv i i') :=
 Lemma widen_itvE x (uni : unify_itv i i) : @widen_itv x i uni = x.
 Proof. exact/val_inj. Qed.
 
+Lemma posE x (uni : unify_itv i (Itv.Real `]0%Z, +oo[)) :
+  (widen_itv x%:num%:itv uni)%:num = x%:num.
+Proof. by []. Qed.
+
+Lemma nngE x (uni : unify_itv i (Itv.Real `[0%Z, +oo[)) :
+  (widen_itv x%:num%:itv uni)%:num = x%:num.
+Proof. by []. Qed.
+
 End NumDomainTheory.
 
-Arguments itv_bottom {R i} _ {_}.
-Arguments itv_gt0 {R i} _ {_}.
-Arguments itv_le0F {R i} _ {_}.
-Arguments itv_lt0 {R i} _ {_}.
-Arguments itv_ge0F {R i} _ {_}.
-Arguments itv_ge0 {R i} _ {_}.
-Arguments itv_lt0F {R i} _ {_}.
-Arguments itv_le0 {R i} _ {_}.
-Arguments itv_gt0F {R i} _ {_}.
+Arguments bottom {R i} _ {_}.
+Arguments gt0 {R i} _ {_}.
+Arguments le0F {R i} _ {_}.
+Arguments lt0 {R i} _ {_}.
+Arguments ge0F {R i} _ {_}.
+Arguments ge0 {R i} _ {_}.
+Arguments lt0F {R i} _ {_}.
+Arguments le0 {R i} _ {_}.
+Arguments gt0F {R i} _ {_}.
+Arguments cmp0 {R i} _ {_}.
+Arguments neq0 {R i} _ {_}.
+Arguments eq0F {R i} _ {_}.
 Arguments lt1 {R i} _ {_}.
 Arguments ge1F {R i} _ {_}.
 Arguments le1 {R i} _ {_}.
 Arguments gt1F {R i} _ {_}.
 Arguments widen_itv {R i} _ {_ _}.
 Arguments widen_itvE {R i} _ {_}.
+Arguments posE {R i} _ {_}.
+Arguments nngE {R i} _ {_}.
 
-#[export] Hint Extern 0 (is_true (0%R < _)%O) => solve [apply: itv_gt0] : core.
-#[export] Hint Extern 0 (is_true (_ < 0%R)%O) => solve [apply: itv_lt0] : core.
-#[export] Hint Extern 0 (is_true (0%R <= _)%O) => solve [apply: itv_ge0] : core.
-#[export] Hint Extern 0 (is_true (_ <= 0%R)%O) => solve [apply: itv_le0] : core.
+Notation "[ 'gt0' 'of' x ]" := (ltac:(refine (gt0 x%:itv))).
+Notation "[ 'lt0' 'of' x ]" := (ltac:(refine (lt0 x%:itv))).
+Notation "[ 'ge0' 'of' x ]" := (ltac:(refine (ge0 x%:itv))).
+Notation "[ 'le0' 'of' x ]" := (ltac:(refine (le0 x%:itv))).
+Notation "[ 'cmp0' 'of' x ]" := (ltac:(refine (cmp0 x%:itv))).
+Notation "[ 'neq0' 'of' x ]" := (ltac:(refine (neq0 x%:itv))).
+
+#[export] Hint Extern 0 (is_true (0%R < _)%O) => solve [apply: gt0] : core.
+#[export] Hint Extern 0 (is_true (_ < 0%R)%O) => solve [apply: lt0] : core.
+#[export] Hint Extern 0 (is_true (0%R <= _)%O) => solve [apply: ge0] : core.
+#[export] Hint Extern 0 (is_true (_ <= 0%R)%O) => solve [apply: le0] : core.
+#[export] Hint Extern 0 (is_true (_ \is Num.real)) => solve [apply: cmp0]
+  : core.
+#[export] Hint Extern 0 (is_true (0%R >=< _)%O) => solve [apply: cmp0] : core.
+#[export] Hint Extern 0 (is_true (_ != 0%R)%O) => solve [apply: neq0] : core.
 #[export] Hint Extern 0 (is_true (_ < 1%R)%O) => solve [apply: lt1] : core.
 #[export] Hint Extern 0 (is_true (_ <= 1%R)%O) => solve [apply: le1] : core.
 
 Notation "x %:i01" := (widen_itv x%:itv : {i01 _}) (only parsing) : ring_scope.
 Notation "x %:i01" := (@widen_itv _ _
     (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `[Posz 0, Posz 1]) _)
+  (only printing) : ring_scope.
+Notation "x %:pos" := (widen_itv x%:itv : {posnum _}) (only parsing)
+  : ring_scope.
+Notation "x %:pos" := (@widen_itv _ _
+    (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `]Posz 0, +oo[) _)
+  (only printing) : ring_scope.
+Notation "x %:nng" := (widen_itv x%:itv : {nonneg _}) (only parsing)
+  : ring_scope.
+Notation "x %:nng" := (@widen_itv _ _
+    (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `[Posz 0, +oo[) _)
   (only printing) : ring_scope.
 
 Local Open Scope ring_scope.
@@ -436,7 +539,7 @@ by case: b => [[] b | []//]; rewrite /= !bnd_simp mulrNz ?lerN2 // ltrN2.
 Qed.
 
 Definition opp_itv_subdef (i : interval int) : interval int :=
-  let 'Interval l u := i in
+  let: Interval l u := i in
   Interval (opp_itv_bound_subdef u) (opp_itv_bound_subdef l).
 Arguments opp_itv_subdef /.
 
@@ -492,8 +595,8 @@ case: bb1; case: bb2; rewrite /= !bnd_simp mulrzDr_tmp.
 Qed.
 
 Definition add_itv_subdef (i1 i2 : interval int) : interval int :=
-  let 'Interval l1 u1 := i1 in
-  let 'Interval l2 u2 := i2 in
+  let: Interval l1 u1 := i1 in
+  let: Interval l2 u2 := i2 in
   Interval (add_itv_boundl_subdef l1 l2) (add_itv_boundr_subdef u1 u2).
 Arguments add_itv_subdef /.
 
@@ -514,15 +617,15 @@ Canonical add_inum (xi yi : Itv.t) (x : num_def R xi) (y : num_def R yi) :=
 Variant sign := EqZero | NonNeg | NonPos.
 
 Definition itv_bound_signl (b : itv_bound int) : sign :=
-  let b0 := BLeft 0%Z in
+  let: b0 := BLeft 0%Z in
   if b == b0 then EqZero else if (b <= b0)%O then NonPos else NonNeg.
 
 Definition itv_bound_signr (b : itv_bound int) : sign :=
-  let b0 := BRight 0%Z in
+  let: b0 := BRight 0%Z in
   if b == b0 then EqZero else if (b <= b0)%O then NonPos else NonNeg.
 
 Definition interval_sign (i : interval int) : option (option sign) :=
-  let 'Interval l u := i in
+  let: Interval l u := i in
   match itv_bound_signl l, itv_bound_signr u with
   | EqZero, NonPos
   | NonNeg, EqZero
@@ -689,11 +792,11 @@ Admitted.
 (* Qed. *)
 
 Definition mul_itv_subdef (i1 i2 : interval int) : interval int :=
-  let 'Interval l1 u1 := i1 in
-  let 'Interval l2 u2 := i2 in
-  let opp := opp_itv_bound_subdef in
-  let mull := mul_itv_boundl_subdef in
-  let mulr := mul_itv_boundr_subdef in
+  let: Interval l1 u1 := i1 in
+  let: Interval l2 u2 := i2 in
+  let: opp := opp_itv_bound_subdef in
+  let: mull := mul_itv_boundl_subdef in
+  let: mulr := mul_itv_boundr_subdef in
   match interval_sign i1, interval_sign i2 with
   | None, _ | _, None => `[1, 0]
   | some s1, Some s2 =>
@@ -943,8 +1046,8 @@ move=> x1_cmp_x2; case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
 Qed.
 
 Definition min_itv_subdef (x y : interval int) : interval int :=
-  let 'Interval lx ux := x in
-  let 'Interval ly uy := y in
+  let: Interval lx ux := x in
+  let: Interval ly uy := y in
   Interval (Order.min lx ly) (Order.min ux uy).
 Arguments min_itv_subdef /.
 
@@ -984,8 +1087,8 @@ case: (leP b1 b2) => [b1_le_b2 | /ltW b2_le_b1].
 Qed.
 
 Definition max_itv_subdef (x y : interval int) : interval int :=
-  let 'Interval lx ux := x in
-  let 'Interval ly uy := y in
+  let: Interval lx ux := x in
+  let: Interval ly uy := y in
   Interval (Order.max lx ly) (Order.max ux uy).
 Arguments max_itv_subdef /.
 
@@ -1000,6 +1103,42 @@ rewrite /Itv.num_sem max_real//=; apply/andP; split.
 - by apply: max_itv_boundl_subproof => //; apply: real_comparable.
 - exact: max_itv_boundr_subproof.
 Qed.
+
+(* We can't directly put an instance on Order.min for R : numDomainType
+   since we may want instances for other porderType
+   (typically \bar R or even nat). So we resort on this additional
+   canonical structure. *)
+Record min_max_typ d := MinMaxTyp {
+  min_max_sort : porderType d;
+  #[canonical=no]
+  min_max_sem : interval int -> min_max_sort -> bool;
+  #[canonical=no]
+  min_max_minP : forall (xi yi : Itv.t) (x : Itv.def min_max_sem xi)
+    (y : Itv.def min_max_sem yi),
+    let: r := itv_real2_subdef min_itv_subdef xi yi in
+    Itv.spec min_max_sem r (Order.min x%:num y%:num);
+  #[canonical=no]
+  min_max_maxP : forall (xi yi : Itv.t) (x : Itv.def min_max_sem xi)
+    (y : Itv.def min_max_sem yi),
+    let: r := itv_real2_subdef max_itv_subdef xi yi in
+    Itv.spec min_max_sem r (Order.max x%:num y%:num);
+}.
+
+(* The default instances on porderType, for min... *)
+Canonical min_typ_inum d (t : min_max_typ d) (xi yi : Itv.t)
+    (x : Itv.def (@min_max_sem d t) xi) (y : Itv.def (@min_max_sem d t) yi)
+    (r := itv_real2_subdef min_itv_subdef xi yi) :=
+  Itv.mk (min_max_minP x y).
+
+(* ...and for max *)
+Canonical max_typ_inum d (t : min_max_typ d) (xi yi : Itv.t)
+    (x : Itv.def (@min_max_sem d t) xi) (y : Itv.def (@min_max_sem d t) yi)
+    (r := itv_real2_subdef min_itv_subdef xi yi) :=
+  Itv.mk (min_max_maxP x y).
+
+(* Instance of the above structure for numDomainType *)
+Canonical num_min_max_typ (R : numDomainType) :=
+  MinMaxTyp num_min_inum_subproof num_max_inum_subproof.
 
 Lemma nat_num_spec (i : Itv.t) (n : nat) : nat_spec i n = num_spec i (n%:R : R).
 Proof.
@@ -1083,7 +1222,7 @@ case: b => [[] [[|//] | b] | []//] hge hgt; rewrite !bnd_simp.
 Qed.
 
 Definition inv_itv_subdef (i : interval int) : interval int :=
-  let 'Interval l u := i in
+  let: Interval l u := i in
   Interval (keep_pos_itv_bound_subdef l) (keep_neg_itv_bound_subdef u).
 Arguments inv_itv_subdef /.
 
@@ -1105,9 +1244,28 @@ Qed.
 Canonical inv_inum (i : Itv.t) (x : num_def R i) :=
   Itv.mk (inv_inum_subproof x).
 
+Definition exprn_le1_itv_bound_subdef (l u : itv_bound int) : itv_bound int :=
+  if u isn't BSide _ (Posz 1) then +oo
+  else if (BLeft 0%Z <= l)%O then BRight 1%Z else +oo.
+Arguments exprn_le1_itv_bound_subdef /.
+
+Lemma exprn_le1_itv_bound_subproof (x : R) n l u :
+  (num_itv_bound R l <= BLeft x)%O ->
+  (BRight x <= num_itv_bound R u)%O ->
+  (BRight (x ^+ n) <= num_itv_bound R (exprn_le1_itv_bound_subdef l u))%O.
+Proof.
+case: u => [bu [[//|[|//]] |//] | []//].
+rewrite /exprn_le1_itv_bound_subdef; case: (leP _ l) => [lge1 /= |//] lx xu.
+rewrite bnd_simp; case: n => [| n]; rewrite ?expr0// expr_le1//.
+  by case: bu xu; rewrite bnd_simp//; apply: ltW.
+case: l lge1 lx => [[] l | []//]; rewrite !bnd_simp -(@ler_int R).
+- exact: le_trans.
+- by move=> + /ltW; apply: le_trans.
+Qed.
+
 Definition exprn_itv_subdef (i : interval int) : interval int :=
-  let 'Interval l u := i in
-  Interval (keep_pos_itv_bound_subdef l) +oo.
+  let: Interval l u := i in
+  Interval (keep_pos_itv_bound_subdef l) (exprn_le1_itv_bound_subdef l u).
 Arguments exprn_itv_subdef /.
 
 Lemma exprn_inum_subproof (i : Itv.t) (x : num_def R i) n
@@ -1116,10 +1274,11 @@ Lemma exprn_inum_subproof (i : Itv.t) (x : num_def R i) n
 Proof.
 apply: (@itv_real1_subproof _ _ (fun x => x^+n) _ _ _ _ (Itv.P x)).
 case: x => x /= _ [l u] /and3P[xr /= lx xu].
-rewrite /Itv.num_sem realX//=; apply/andP; split=> [|//].
-apply: (@keep_pos_itv_bound_subproof (fun x => x^+n)) lx.
-- exact: exprn_ge0.
-- exact: exprn_gt0.
+rewrite /Itv.num_sem realX//=; apply/andP; split.
+- apply: (@keep_pos_itv_bound_subproof (fun x => x^+n)) lx.
+  + exact: exprn_ge0.
+  + exact: exprn_gt0.
+- exact: exprn_le1_itv_bound_subproof lx xu.
 Qed.
 
 Canonical exprn_inum (i : Itv.t) (x : num_def R i) n :=
@@ -1137,8 +1296,13 @@ End NumDomainInstances.
 Section RcfInstances.
 Context {R : rcfType}.
 
+Definition sqrt_itv_subdef (i : interval int) : interval int :=
+  let: Interval l u := i in
+  Interval (keep_pos_itv_bound_subdef l) +oo.
+Arguments sqrt_itv_subdef /.
+
 Lemma sqrt_inum_subproof (i : Itv.t) (x : num_def R i)
-    (r := itv_real1_subdef exprn_itv_subdef i) :
+    (r := itv_real1_subdef sqrt_itv_subdef i) :
   num_spec r (Num.sqrt x%:inum).
 Proof.
 apply: itv_real1_subproof (Itv.P x).
@@ -1153,6 +1317,41 @@ Canonical sqrt_inum (i : Itv.t) (x : num_def R i) :=
   Itv.mk (sqrt_inum_subproof x).
 
 End RcfInstances.
+
+Section NumClosedFieldInstances.
+Context {R : numClosedFieldType}.
+
+Definition sqrtC_itv_subdef (i : Itv.t) : Itv.t :=
+  match i with
+  | Itv.Top => Itv.Top
+  | Itv.Real (Interval l u) =>
+    match l with
+    | BSide b (Posz _) => Itv.Real (Interval (BSide b 0%Z) +oo)
+    | _ => Itv.Top
+    end
+  end.
+Arguments sqrtC_itv_subdef /.
+
+(* TODO: move to mathcomp_extra *)
+Lemma real_sqrtC (x : R) : 0 <= x -> sqrtC x \in Num.real.
+Proof. by rewrite -sqrtC_ge0; apply: ger0_real. Qed.
+
+Lemma sqrtC_inum_subproof (i : Itv.t) (x : num_def R i)
+    (r := sqrtC_itv_subdef i) :
+  num_spec r (sqrtC x%:inum).
+Proof.
+rewrite {}/r; case: i x => [//| [l u] [x /=/and3P[xr /= lx xu]]].
+case: l lx => [bl [l |//] |[]//] lx; apply/and3P; split=> //=.
+  by apply: real_sqrtC; case: bl lx => /[!bnd_simp] [|/ltW]; apply: le_trans.
+case: bl lx => /[!bnd_simp] lx.
+- by rewrite sqrtC_ge0; apply: le_trans lx.
+- by rewrite sqrtC_gt0; apply: le_lt_trans lx.
+Qed.
+
+Canonical sqrtC_inum (i : Itv.t) (x : num_def R i) :=
+  Itv.mk (sqrtC_inum_subproof x).
+
+End NumClosedFieldInstances.
 
 Section NatInstances.
 Local Open Scope nat_scope.
@@ -1263,6 +1462,9 @@ Qed.
 Canonical maxn_inum (xi yi : Itv.t) (x : nat_def xi) (y : nat_def yi) :=
   Itv.mk (maxn_inum_subproof x y).
 
+Canonical nat_min_max_typ :=
+  MinMaxTyp minn_inum_subproof maxn_inum_subproof.
+
 End NatInstances.
 
 Section IntInstances.
@@ -1283,17 +1485,244 @@ Section Morph.
 Context {R : numDomainType} {i : Itv.t}.
 Local Notation nR := (num_def R i).
 Implicit Types x y : nR.
-Local Notation inum := (@inum R (@Itv.num_sem R) i).
+Local Notation num := (@inum R (@Itv.num_sem R) i).
 
-Lemma inum_eq : {mono inum : x y / x == y}. Proof. by []. Qed.
-Lemma inum_le : {mono inum : x y / (x <= y)%O}. Proof. by []. Qed.
-Lemma inum_lt : {mono inum : x y / (x < y)%O}. Proof. by []. Qed.
-Lemma inum_min : {morph inum : x y / Order.min x y}.
-Proof. by move=> x y; rewrite !minEle inum_le -fun_if. Qed.
-Lemma inum_max : {morph inum : x y / Order.max x y}.
-Proof. by move=> x y; rewrite !maxEle inum_le -fun_if. Qed.
+Lemma num_eq : {mono num : x y / x == y}. Proof. by []. Qed.
+Lemma num_le : {mono num : x y / (x <= y)%O}. Proof. by []. Qed.
+Lemma num_lt : {mono num : x y / (x < y)%O}. Proof. by []. Qed.
+Lemma num_min : {morph num : x y / Order.min x y}.
+Proof. by move=> x y; rewrite !minEle num_le -fun_if. Qed.
+Lemma num_max : {morph num : x y / Order.max x y}.
+Proof. by move=> x y; rewrite !maxEle num_le -fun_if. Qed.
 
 End Morph.
+
+Section MorphNum.
+Context {R : numDomainType}.
+
+Lemma num_abs_eq0 (a : R) : (`|a|%:nng == 0%:nng) = (a == 0).
+Proof. by rewrite -normr_eq0. Qed.
+
+End MorphNum.
+
+Section MorphReal.
+Context {R : numDomainType} {i : interval int}.
+Local Notation nR := (num_def R (Itv.Real i)).
+Implicit Type x y : nR.
+Local Notation num := (@inum R (@Itv.num_sem R) i).
+
+Lemma num_le_max a x y :
+  a <= Num.max x%:num y%:num = (a <= x%:num) || (a <= y%:num).
+Proof. by rewrite -comparable_le_max// real_comparable. Qed.
+
+Lemma num_ge_max a x y :
+  Num.max x%:num y%:num <= a = (x%:num <= a) && (y%:num <= a).
+Proof. by rewrite -comparable_ge_max// real_comparable. Qed.
+
+Lemma num_le_min a x y :
+  a <= Num.min x%:num y%:num = (a <= x%:num) && (a <= y%:num).
+Proof. by rewrite -comparable_le_min// real_comparable. Qed.
+
+Lemma num_ge_min a x y :
+  Num.min x%:num y%:num <= a = (x%:num <= a) || (y%:num <= a).
+Proof. by rewrite -comparable_ge_min// real_comparable. Qed.
+
+Lemma num_lt_max a x y :
+  a < Num.max x%:num y%:num = (a < x%:num) || (a < y%:num).
+Proof. by rewrite -comparable_lt_max// real_comparable. Qed.
+
+Lemma num_gt_max a x y :
+  Num.max x%:num  y%:num < a = (x%:num < a) && (y%:num < a).
+Proof. by rewrite -comparable_gt_max// real_comparable. Qed.
+
+Lemma num_lt_min a x y :
+  a < Num.min x%:num y%:num = (a < x%:num) && (a < y%:num).
+Proof. by rewrite -comparable_lt_min// real_comparable. Qed.
+
+Lemma num_gt_min a x y :
+  Num.min x%:num y%:num < a = (x%:num < a) || (y%:num < a).
+Proof. by rewrite -comparable_gt_min// real_comparable. Qed.
+
+End MorphReal.
+
+Section MorphGe0.
+Context {R : numDomainType}.
+Local Notation nR := (num_def R (Itv.Real `[0%Z, +oo[)).
+Implicit Type x y : nR.
+Local Notation num := (@inum R (@Itv.num_sem R) (Itv.Real `[0%Z, +oo[)).
+
+Lemma num_abs_le a x : 0 <= a -> (`|a|%:nng <= x) = (a <= x%:num).
+Proof. by move=> a0; rewrite -num_le//= ger0_norm. Qed.
+
+Lemma num_abs_lt a x : 0 <= a -> (`|a|%:nng < x) = (a < x%:num).
+Proof. by move=> a0; rewrite -num_lt/= ger0_norm. Qed.
+End MorphGe0.
+
+Section ItvNum.
+Context (R : numDomainType).
+Context (x : R) (i : interval int) (x_in_i : Itv.num_sem i x).
+Lemma itvnum_subdef : num_spec (Itv.Real i) x. Proof. by []. Qed.
+Definition ItvNum : num_def R (Itv.Real i) := Itv.mk itvnum_subdef.
+End ItvNum.
+
+Section ItvNumcc.
+Context (R : numDomainType) (x : R) (xr : x \in Num.real).
+Context (l u : int) (lx : l%:~R <= x) (xu : x <= u%:~R).
+Lemma itvnumcc_subdef : num_spec (Itv.Real `[l, u]) x.
+Proof. by apply/and3P. Qed.
+Definition ItvNumcc : num_def R (Itv.Real `[l, u]) := Itv.mk itvnumcc_subdef.
+End ItvNumcc.
+
+Section ItvNumco.
+Context (R : numDomainType) (x : R) (xr : x \in Num.real).
+Context (l u : int) (lx : l%:~R <= x) (xu : x < u%:~R).
+Lemma itvnumco_subdef : num_spec (Itv.Real `[l, u[) x.
+Proof. by apply/and3P. Qed.
+Definition ItvNumco : num_def R (Itv.Real `[l, u[) := Itv.mk itvnumco_subdef.
+End ItvNumco.
+
+Section ItvNumoc.
+Context (R : numDomainType) (x : R) (xr : x \in Num.real).
+Context (l u : int) (lx : l%:~R < x) (xu : x <= u%:~R).
+Lemma itvnumoc_subdef : num_spec (Itv.Real `]l, u]) x.
+Proof. by apply/and3P. Qed.
+Definition ItvNumoc : num_def R (Itv.Real `]l, u]) := Itv.mk itvnumoc_subdef.
+End ItvNumoc.
+
+Section ItvNumoo.
+Context (R : numDomainType) (x : R) (xr : x \in Num.real).
+Context (l u : int) (lx : l%:~R < x) (xu : x < u%:~R).
+Lemma itvnumoo_subdef : num_spec (Itv.Real `]l, u[) x.
+Proof. by apply/and3P. Qed.
+Definition ItvNumoo : num_def R (Itv.Real `]l, u[) := Itv.mk itvnumoo_subdef.
+End ItvNumoo.
+
+Section ItvNumcy.
+Context (R : numDomainType) (x : R) (xr : x \in Num.real).
+Context (l u : int) (lx : l%:~R <= x).
+Lemma itvnumcy_subdef : num_spec (Itv.Real `[l, +oo[) x.
+Proof. by apply/and3P. Qed.
+Definition ItvNumcy : num_def R (Itv.Real `[l, +oo[) := Itv.mk itvnumcy_subdef.
+End ItvNumcy.
+
+Section ItvNumoy.
+Context (R : numDomainType) (x : R) (xr : x \in Num.real).
+Context (l u : int) (lx : l%:~R < x).
+Lemma itvnumoy_subdef : num_spec (Itv.Real `]l, +oo[) x.
+Proof. by apply/and3P. Qed.
+Definition ItvNumoy : num_def R (Itv.Real `]l, +oo[) := Itv.mk itvnumoy_subdef.
+End ItvNumoy.
+
+Section ItvNumyc.
+Context (R : numDomainType) (x : R) (xr : x \in Num.real).
+Context (l u : int) (xu : x <= u%:~R).
+Lemma itvnumyc_subdef : num_spec (Itv.Real `]-oo, u]) x.
+Proof. by apply/and3P. Qed.
+Definition ItvNumyc : num_def R (Itv.Real `]-oo, u]) := Itv.mk itvnumyc_subdef.
+End ItvNumyc.
+
+Section ItvNumyo.
+Context (R : numDomainType) (x : R) (xr : x \in Num.real).
+Context (l u : int) (xu : x < u%:~R).
+Lemma itvnumyo_subdef : num_spec (Itv.Real `]-oo, u[) x.
+Proof. by apply/and3P. Qed.
+Definition ItvNumyo : num_def R (Itv.Real `]-oo, u[) := Itv.mk itvnumyo_subdef.
+End ItvNumyo.
+
+Section ItvRealcc.
+Context (R : realDomainType) (x : R).
+Context (l u : int) (lx : l%:~R <= x) (xu : x <= u%:~R).
+Lemma itvrealcc_subdef : num_spec (Itv.Real `[l, u]) x.
+Proof. by apply/and3P; rewrite num_real. Qed.
+Definition ItvRealcc : num_def R (Itv.Real `[l, u]) := Itv.mk itvrealcc_subdef.
+End ItvRealcc.
+
+Section ItvRealco.
+Context (R : realDomainType) (x : R).
+Context (l u : int) (lx : l%:~R <= x) (xu : x < u%:~R).
+Lemma itvrealco_subdef : num_spec (Itv.Real `[l, u[) x.
+Proof. by apply/and3P; rewrite num_real. Qed.
+Definition ItvRealco : num_def R (Itv.Real `[l, u[) := Itv.mk itvrealco_subdef.
+End ItvRealco.
+
+Section ItvRealoc.
+Context (R : realDomainType) (x : R).
+Context (l u : int) (lx : l%:~R < x) (xu : x <= u%:~R).
+Lemma itvrealoc_subdef : num_spec (Itv.Real `]l, u]) x.
+Proof. by apply/and3P; rewrite num_real. Qed.
+Definition ItvRealoc : num_def R (Itv.Real `]l, u]) := Itv.mk itvrealoc_subdef.
+End ItvRealoc.
+
+Section ItvRealoo.
+Context (R : realDomainType) (x : R).
+Context (l u : int) (lx : l%:~R < x) (xu : x < u%:~R).
+Lemma itvrealoo_subdef : num_spec (Itv.Real `]l, u[) x.
+Proof. by apply/and3P; rewrite num_real. Qed.
+Definition ItvRealoo : num_def R (Itv.Real `]l, u[) := Itv.mk itvrealoo_subdef.
+End ItvRealoo.
+
+Section ItvRealcy.
+Context (R : realDomainType) (x : R).
+Context (l u : int) (lx : l%:~R <= x).
+Lemma itvrealcy_subdef : num_spec (Itv.Real `[l, +oo[) x.
+Proof. by apply/and3P; rewrite num_real. Qed.
+Definition ItvRealcy : num_def R (Itv.Real `[l, +oo[) := Itv.mk itvrealcy_subdef.
+End ItvRealcy.
+
+Section ItvRealoy.
+Context (R : realDomainType) (x : R).
+Context (l u : int) (lx : l%:~R < x).
+Lemma itvrealoy_subdef : num_spec (Itv.Real `]l, +oo[) x.
+Proof. by apply/and3P; rewrite num_real. Qed.
+Definition ItvRealoy : num_def R (Itv.Real `]l, +oo[) := Itv.mk itvrealoy_subdef.
+End ItvRealoy.
+
+Section ItvRealyc.
+Context (R : realDomainType) (x : R).
+Context (l u : int) (xu : x <= u%:~R).
+Lemma itvrealyc_subdef : num_spec (Itv.Real `]-oo, u]) x.
+Proof. by apply/and3P; rewrite num_real. Qed.
+Definition ItvRealyc : num_def R (Itv.Real `]-oo, u]) := Itv.mk itvrealyc_subdef.
+End ItvRealyc.
+
+Section ItvRealyo.
+Context (R : realDomainType) (x : R).
+Context (l u : int) (xu : x < u%:~R).
+Lemma itvrealyo_subdef : num_spec (Itv.Real `]-oo, u[) x.
+Proof. by apply/and3P; rewrite num_real. Qed.
+Definition ItvRealyo : num_def R (Itv.Real `]-oo, u[) := Itv.mk itvrealyo_subdef.
+End ItvRealyo.
+
+Section Posnum.
+Context (R : numDomainType) (x : R) (x_gt0 : 0 < x).
+Lemma posnum_subdef : num_spec (Itv.Real `]0, +oo[) x.
+Proof. by apply/and3P; rewrite /= gtr0_real. Qed.
+Definition PosNum : {posnum R} := Itv.mk posnum_subdef.
+End Posnum.
+
+Section Nngnum.
+Context (R : numDomainType) (x : R) (x_ge0 : 0 <= x).
+Lemma nngnum_subdef : num_spec (Itv.Real `[0, +oo[) x.
+Proof. by apply/and3P; rewrite /= ger0_real. Qed.
+Definition NngNum : {nonneg R} := Itv.mk nngnum_subdef.
+End Nngnum.
+
+Variant posnum_spec (R : numDomainType) (x : R) :
+  R -> bool -> bool -> bool -> Type :=
+| IsPosnum (p : {posnum R}) : posnum_spec x (p%:num) false true true.
+
+Lemma posnumP (R : numDomainType) (x : R) : 0 < x ->
+  posnum_spec x x (x == 0) (0 <= x) (0 < x).
+Proof.
+move=> x_gt0; case: real_ltgt0P (x_gt0) => []; rewrite ?gtr0_real // => _ _.
+by rewrite -[x]/(PosNum x_gt0)%:num; constructor.
+Qed.
+
+Variant nonneg_spec (R : numDomainType) (x : R) : R -> bool -> Type :=
+| IsNonneg (p : {nonneg R}) : nonneg_spec x (p%:num) true.
+
+Lemma nonnegP (R : numDomainType) (x : R) : 0 <= x -> nonneg_spec x x (0 <= x).
+Proof. by move=> xge0; rewrite xge0 -[x]/(NngNum xge0)%:num; constructor. Qed.
 
 Section Test1.
 

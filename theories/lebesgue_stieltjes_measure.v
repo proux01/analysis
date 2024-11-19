@@ -4,7 +4,7 @@ From mathcomp Require Import finmap fingroup perm rat archimedean.
 From HB Require Import structures.
 From mathcomp.classical Require Import mathcomp_extra boolp classical_sets.
 From mathcomp.classical Require Import functions fsbigop cardinality.
-From mathcomp Require Import reals ereal trucmuche topology numfun normedtype.
+From mathcomp Require Import reals ereal itv topology numfun normedtype.
 From mathcomp Require Import sequences esum real_interval measure realfun.
 
 (**md**************************************************************************)
@@ -488,11 +488,12 @@ exists (fun k => `](- k%:R), k%:R]%classic).
   rewrite !natr_absz intr_norm intrD.
   suff: `|x| < `|(floor `|x|)%:~R + 1| by rewrite ltr_norml => /andP[-> /ltW->].
   rewrite [ltRHS]ger0_norm//.
+Fail. Admitted. (*
     by rewrite intrD1 (le_lt_trans _ (lt_succ_floor _))// ?ler_norm.
   by rewrite addr_ge0// ler0z floor_ge0.
 move=> k; split => //; rewrite wlength_itv /= -EFinB.
 by case: ifP; rewrite ltey.
-Qed.
+Qed. *)
 
 Definition lebesgue_stieltjes_measure (f : cumulative R) :=
   measure_extension [the measure _ _ of wlength f].

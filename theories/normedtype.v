@@ -5,7 +5,7 @@ From mathcomp Require Import rat interval zmodp vector fieldext falgebra.
 From mathcomp Require Import boolp classical_sets functions.
 From mathcomp Require Import archimedean.
 From mathcomp Require Import cardinality set_interval ereal reals.
-From mathcomp Require Import trucmuche topology prodnormedzmodule function_spaces.
+From mathcomp Require Import itv topology prodnormedzmodule function_spaces.
 From mathcomp Require Export real_interval separation_axioms.
 
 (**md**************************************************************************)
@@ -2258,7 +2258,7 @@ rewrite /normr /ball_ predeq3E => x e y /=; rewrite mx_normE; split => xey.
   by rewrite -num_lt /=; split => // -[? ?] _; rewrite !mxE; exact: xey.
 - have e_gt0 : 0 < e by rewrite (le_lt_trans _ xey).
   move: e_gt0 (e_gt0) xey => /ltW/nonnegP[{}e] e_gt0.
-  move=> /(bigmax_ltP _ _ _ (fun _ => _%:sgn)) /= [e0 xey] i j.
+  move=> /(bigmax_ltP _ _ _ (fun _ => _%:itv)) /= [e0 xey] i j.
   by move: (xey (i, j)); rewrite !mxE; exact.
 Qed.
 
@@ -3228,7 +3228,8 @@ rewrite ball_close; split=> [bxy|edist0 eps]; first last.
   by apply: (@edist_lt_ball _ (x, y)); rewrite edist0.
 case: ltgtP (edist_ge0 (x, y)) => // dpos _.
 have xxfin : edist (x, y) \is a fin_num.
-  by rewrite ge0_fin_numE// (@le_lt_trans _ _ 1%:E) ?ltey// edist_fin.
+  rewrite ge0_fin_numE// (@le_lt_trans _ _ 1%:E) ?ltey// edist_fin//.
+  exact: bxy (widen_itv 1%:itv).
 have dpose : fine (edist (x, y)) > 0 by rewrite -lte_fin fineK.
 pose eps := PosNum dpose.
 have : (edist (x, y) <= (eps%:num / 2)%:E)%E.
@@ -3376,7 +3377,7 @@ pose f z := (f' z)/eps%:num; exists f; split.
   apply: fine_cvg; first exact: nbhs_filter.
   rewrite fineK //; first exact: edist_inf_continuous.
 - move=> _ [x _ <-]; rewrite set_itvE /=; apply/andP; split.
-    by rewrite /f divr_ge0 // /f' /= le_min fine_ge0//= edist_inf_ge0.
+    by rewrite /f divr_ge0 /f' ?le_min ?fine_ge0 ?edist_inf_ge0/=.
   by rewrite /f ler_pdivrMr // mul1r /f' /= /minr; case: ltP => // /ltW.
 - by move=> ? [z Az] <-; rewrite /f/f' /= edist_inf0 // /minr fine0 ifT ?mul0r.
 - move=> ? [b Bb] <-; rewrite /f /f'/= /minr/=.
@@ -5247,7 +5248,7 @@ Proof.
 split=> [/nbhs_ballP[_/posnumP[r] xrB]|[e xeB]]; last first.
   apply/nbhs_ballP; exists e%:num => //=.
   exact: (subset_trans (@subset_closure _ _) xeB).
-exists (r%:num / 2)%:sgn.
+exists (r%:num / 2)%:itv.
 apply: (subset_trans (closed_ball_subset _ _) xrB) => //=.
 by rewrite lter_pdivrMr // ltr_pMr // ltr1n.
 Qed.

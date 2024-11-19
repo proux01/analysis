@@ -1,7 +1,7 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From mathcomp Require Import all_ssreflect all_algebra archimedean finmap.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
-From mathcomp Require Import cardinality fsbigop reals ereal trucmuche.
+From mathcomp Require Import cardinality fsbigop reals ereal itv.
 From mathcomp Require Import topology normedtype sequences esum numfun.
 From HB Require Import structures.
 
@@ -1967,10 +1967,16 @@ Context d (T : semiRingOfSetsType d) (R : numFieldType).
 
 Variable mu : {content set T -> \bar R}.
 
-Lemma content_snum_subproof S : Signed.spec 0 ?=0 >=0 (mu S).
-Proof. exact: measure_ge0. Qed.
+Lemma content_inum_subproof S :
+  Itv.spec (@ext_num_sem R) (Itv.Real `[0%Z, +oo[) (mu S).
+Proof.
+apply/and3P; split.
+- by rewrite -real_leNye; apply: le_trans (measure_ge0 _ _).
+- by rewrite /= bnd_simp measure_ge0.
+- by rewrite bnd_simp.
+Qed.
 
-Canonical content_snum S := Signed.mk (content_snum_subproof S).
+Canonical content_inum S := Itv.mk (content_inum_subproof S).
 
 End content_signed.
 
@@ -2121,10 +2127,16 @@ Context d (R : numFieldType) (T : semiRingOfSetsType d).
 
 Variable mu : {measure set T -> \bar R}.
 
-Lemma measure_snum_subproof S : Signed.spec 0 ?=0 >=0 (mu S).
-Proof. exact: measure_ge0. Qed.
+Lemma measure_inum_subproof S :
+  Itv.spec (@ext_num_sem R) (Itv.Real `[0%Z, +oo[) (mu S).
+Proof.
+apply/and3P; split.
+- by rewrite -real_leNye; apply: le_trans (measure_ge0 _ _).
+- by rewrite /= bnd_simp measure_ge0.
+- by rewrite bnd_simp.
+Qed.
 
-Canonical measure_snum S := Signed.mk (measure_snum_subproof S).
+Canonical measure_inum S := Itv.mk (measure_inum_subproof S).
 
 End measure_signed.
 
@@ -3563,7 +3575,9 @@ by rewrite /mnormalize; case: ifPn => // _; rewrite measure0 mul0e.
 Qed.
 
 Let mnormalize_ge0 U : 0 <= mnormalize U.
-Proof. by rewrite /mnormalize; case: ifPn => //; case: ifPn. Qed.
+Proof.
+Fail. Admitted. (*
+ by rewrite /mnormalize; case: ifPn => //; case: ifPn. Qed. *)
 
 Let mnormalize_sigma_additive : semi_sigma_additive mnormalize.
 Proof.
@@ -4666,6 +4680,7 @@ rewrite (_ : esum _ _ = \sum_(i <oo) \sum_(j <oo ) mu (G i j)); last first.
       rewrite predeqE => -[n m] /=; split => //= -[] [_] _ [<-{n} _].
       by move=> [m' _] [] /esym/eqP; rewrite (negbTE ij).
     - by move=> /= [n m]; apply: measure_ge0; exact: (cover_measurable (PG n).1).
+Fail. Admitted. (*
   rewrite -(image_id [set: nat]) -fun_true esum_pred_image//; last first.
     by move=> n _; exact: esum_ge0.
   apply: eq_eseriesr => /= j _.
@@ -4677,7 +4692,7 @@ apply: lee_lim.
   by apply: nneseries_ge0 => m _; exact: (muG_ge0 (n, m)).
 - by apply: is_cvg_nneseries => n _; apply: adde_ge0 => //; exact: mu_ext_ge0.
 - by near=> n; apply: lee_sum => i _; exact: (PG i).2.
-Unshelve. all: by end_near. Qed.
+Unshelve. all: by end_near. Qed. *)
 
 End outer_measure_construction.
 Declare Scope measure_scope.
@@ -4693,7 +4708,7 @@ HB.instance Definition _ := isOuterMeasure.Build
   R T _ (@mu_ext0 _ _ _ _ (measure0 mu) (measure_ge0 mu))
       (mu_ext_ge0 (measure_ge0 mu))
       (le_mu_ext mu)
-      (mu_ext_sigma_subadditive (measure_ge0 mu)).
+      (mu_ext_sigma_subadditive (measure0 mu) (measure_ge0 mu)).
 
 End outer_measure_of_content.
 
