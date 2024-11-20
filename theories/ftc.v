@@ -2,7 +2,7 @@
 From HB Require Import structures.
 From mathcomp Require Import all_ssreflect ssralg ssrnum ssrint interval finmap.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
-From mathcomp Require Import cardinality fsbigop trucmuche reals ereal.
+From mathcomp Require Import cardinality fsbigop reals itv ereal.
 From mathcomp Require Import topology normedtype sequences real_interval.
 From mathcomp Require Import esum measure lebesgue_measure numfun realfun.
 From mathcomp Require Import lebesgue_integral derive charge.
@@ -347,7 +347,7 @@ apply: (@le_trans _ _ ((\int[mu]_(t in `[a, c]) `|f t|))%:E).
 set rhs : \bar R := leRHS.
 have [->|rhsoo] := eqVneq rhs +oo%E; first by rewrite leey.
 rewrite /rhs /Rintegral -/rhs.
-rewrite fineK// fin_numE rhsoo andbT -ltNye (@lt_le_trans _ _ 0%E)//.
+rewrite fineK// fin_numE rhsoo andbT -ltNye (@lt_le_trans _ _ 0%E) => [//|//|].
 exact: integral_ge0.
 Unshelve. all: by end_near. Qed.
 

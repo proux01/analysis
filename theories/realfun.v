@@ -1554,6 +1554,9 @@ Qed.
 Lemma sqr_continuous : continuous (@exprz R ^~ 2).
 Proof. exact: (@exprn_continuous 2%N). Qed.
 
+(* Lemma test (M : R) : M \is_near (nbhs +oo) -> 0 < M. *)
+
+
 Lemma sqrt_continuous : continuous (@Num.sqrt R).
 Proof.
 move=> x; case: (ltrgtP x 0) => [xlt0 | xgt0 | ->].
@@ -1562,8 +1565,8 @@ move=> x; case: (ltrgtP x 0) => [xlt0 | xgt0 | ->].
   pose I b : set R := [set` `]0 ^+ 2, b ^+ 2[].
   suff main b : 0 <= b -> {in I b, continuous (@Num.sqrt R)}.
     near +oo_R => M; apply: (main M); rewrite // /I !inE/= in_itv/= expr0n xgt0.
-    admit.
     (* by rewrite -ltr_sqrt ?exprn_gt0// sqrtr_sqr gtr0_norm/=. *)
+    admit.
   move=> b0; rewrite -continuous_open_subspace; last exact: interval_open.
   apply: continuous_subspaceW; first exact: subset_itv_oo_cc.
   apply: (@segment_can_le_continuous _ _ _ (@GRing.exp _^~ _)) => //.
@@ -1573,7 +1576,7 @@ move=> x; case: (ltrgtP x 0) => [xlt0 | xgt0 | ->].
   have [ylt0|yge0] := ltrP y 0; first by rewrite ltr0_sqrtr ?normr0.
   rewrite ger0_norm ?sqrtr_ge0//; have: `|y| < e%:num ^+ 2 by [].
   by rewrite -ltr_sqrt// ger0_norm// sqrtr_sqr ger0_norm.
-Unshelve. all: by end_near. Fail. Admitted. (* Qed. *)
+Unshelve. all: by end_near. Admitted. (*ITV Qed. *)
 
 End real_inverse_function_instances.
 

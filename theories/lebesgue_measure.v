@@ -1660,7 +1660,6 @@ have nEcvg x k : exists n, A x -> (~` E k n) x.
   have [] := fptwsg _ Ax (interior (ball (g x) k.+1%:R^-1)).
     by apply: open_nbhs_nbhs; split; [exact: open_interior|exact: nbhsx_ballx].
   move=> N _ Nk; exists N.+1 => _; rewrite /E setC_bigcup => i /= /ltnW Ni.
-Fail. Admitted. (*
   apply/not_andP; right; apply/negP; rewrite /h -real_ltNge // distrC.
   by case: (Nk _ Ni) => _/posnumP[?]; apply; exact: ball_norm_center.
 have Ek0 k : \bigcap_n (E k n) = set0.
@@ -1694,6 +1693,7 @@ apply/uniform_restrict_cvg => /= U /=; rewrite !uniform_nbhsT.
 case/nbhs_ex => del /= ballU; apply: filterS; first by move=> ?; exact: ballU.
 have [N _ /(_ N)/(_ (leqnn _)) Ndel] := near_infty_natSinv_lt del.
 exists (badn N) => // r badNr x.
+Admitted. (*ITV
 rewrite /patch; case: ifPn => // /set_mem xAB; apply: (lt_trans _ Ndel).
 move: xAB; rewrite setDE => -[Ax]; rewrite setC_bigcup => /(_ N I).
 rewrite /E setC_bigcup => /(_ r) /=; rewrite /h => /(_ badNr) /not_andP[]//.
@@ -2494,8 +2494,7 @@ have [|Aoo e0] := leP +oo (l^* A)%mu.
   by exists [set: R]; split => //; [exact: openT|rewrite Aoo leey].
 have [F AF Fe] : exists2 I_, open_itv_cover A I_ &
     \sum_(0 <= k <oo) l (I_ k) <= (l^* A)%mu + e%:E.
-Fail. Admitted. (*
-  have : (l^* A)%mu\is a fin_num by rewrite ge0_fin_numE// outer_measure_ge0.
+  have : (l^* A)%mu\is a fin_num by rewrite ge0_fin_numE ?outer_measure_ge0.
   rewrite outer_measure_open_itv_cover.
   move=> /lb_ereal_inf_adherent-/(_ _ e0)[_/= [F]] AF <- Fe.
   by exists F => //; exact/ltW.
@@ -2508,7 +2507,7 @@ exists (\bigcup_i F i); split.
   apply: lee_nneseries => // i _.
   case: AF => /(_ i)[[a b] -> _]/=.
   by rewrite /l wlength_itv/= -(@lebesgue_measure_itv R `]a, b[).
-Qed. *)
+Qed.
 
 Lemma outer_measure_open A : (l^* A)%mu =
   ereal_inf [set (l^* U)%mu | U in [set U | open U /\ A `<=` U]].
@@ -2605,8 +2604,7 @@ have muU : mu U < mu D + eps%:E.
   apply: (@le_lt_trans _ _ (\sum_(n <oo) (mu (M' n) + (e2 n)%:E))).
     by rewrite lee_nneseries.
   apply: le_lt_trans.
-Fail. Admitted. (*
-    by apply: epsilon_trick => //; rewrite divr_ge0// ltW.
+    by apply: epsilon_trick => [//|]; rewrite divr_ge0 ?ltW.
   rewrite {2}[eps]splitr EFinD addeA lte_leD//.
   rewrite (le_lt_trans _ zDe)// -sMz lee_nneseries// => i _.
   rewrite /= -wlength_Rhull wlength_itv !er_map_idfun.
@@ -2621,7 +2619,7 @@ rewrite measureD//=.
 - by rewrite setIidr// lte_subel_addl// ge0_fin_numE// (lt_le_trans muU)// leey.
 - by apply: bigcup_measurable => k _; exact: mM.
 - by rewrite (lt_le_trans muU)// leey.
-Qed. *)
+Qed.
 
 Lemma lebesgue_nearly_bounded (D : set R) (eps : R) :
     measurable D -> mu D < +oo -> (0 < eps)%R ->
@@ -2907,15 +2905,14 @@ have [N F5e] : exists N, \sum_(N <= n <oo) \esum_(i in F n) mu (closure (B i)) <
   have : (0 < 5%:R^-1 * e%:num)%R by rewrite mulr_gt0// invr_gt0// ltr0n.
   move=> /[swap] /[apply].
   rewrite near_map => -[N _]/(_ _ (leqnn N)) h; exists N; move: h.
-  rewrite sub0r normrN ger0_norm//; last by rewrite fine_ge0// nneseries_ge0.
+  rewrite sub0r normrN ger0_norm=> [//|]; [|by rewrite fine_ge0 ?nneseries_ge0].
   rewrite -lte_fin; apply: le_lt_trans.
   set X : \bar R := (X in fine X).
   have Xoo : X < +oo.
     apply: le_lt_trans foo.
-Fail. Admitted. (*
-    by rewrite (nneseries_split _ N)// leeDr//; exact: sume_ge0.
-  rewrite fineK ?ge0_fin_numE//; last exact: nneseries_ge0.
-  apply: lee_nneseries => //; first by move=> i _; exact: esum_ge0.
+    by rewrite (nneseries_split _ N) ?leeDr; [|exact: sume_ge0|].
+  rewrite fineK ?ge0_fin_numE => [|//|]; last exact: nneseries_ge0.
+  apply: lee_nneseries => [|//]; first by move=> i _; exact: esum_ge0.
   move=> n Nn; rewrite measure_bigcup//=.
   - by rewrite nneseries_esum// set_mem_set.
   - by move=> i _; exact: measurable_closure.
@@ -2937,7 +2934,7 @@ have ZNF5 : Z r%:num `<=`
         (d%:num < r%:num - `|z|)%R & closed_ball z d%:num `&` K = set0.
       have [d/= d0 dzK] := closed_disjoint_closed_ball closedK Kz.
       have rz0 : (0 < minr ((r%:num - `|z|) / 2) (d / 2))%R.
-        by rewrite lt_min (divr_gt0 d0)//= andbT divr_gt0// subr_gt0.
+        by rewrite lt_min (divr_gt0 d0) ?andbT ?divr_gt0 ?subr_gt0.
       exists (PosNum rz0) => /=.
         by rewrite gt_min ltr_pdivrMr// ltr_pMr ?subr_gt0// ltr1n.
       apply: dzK => //=.
@@ -3003,15 +3000,15 @@ have {}ZNF5 : mu (Z r%:num) <=
     by apply: measurable_closure; exact: is_scale_ball.
 apply/(le_trans ZNF5).
 move/ltW: F5e; rewrite [in X in X -> _](@lee_pdivlMl R 5%:R) ?ltr0n//.
-rewrite -nneseriesZl//; last by move=> *; exact: esum_ge0.
-apply: le_trans; apply: lee_nneseries => //; first by move=> *; exact: esum_ge0.
+rewrite -nneseriesZl; last by move=> *; exact: esum_ge0.
+apply: le_trans; apply: lee_nneseries; first by move=> *; exact: esum_ge0.
 move=> n _.
 rewrite -(set_mem_set (F n)) -nneseries_esum// -nneseries_esum// -nneseriesZl//.
 apply: lee_nneseries => // m mFn.
 rewrite (ballE (is_ballB m))// closure_ball lebesgue_measure_closed_ball//.
 rewrite scale_ballE// closure_ball lebesgue_measure_closed_ball//.
 by rewrite -EFinM mulrnAr.
-Qed. *)
+Qed.
 
 End vitali_theorem.
 
@@ -3193,9 +3190,8 @@ have bigBG_fin (r : {posnum R}) : finite_set (bigB G r%:num).
         rewrite EFinM -lte_pdivrMl// muleC -(@fineK _ (mu O)); last first.
           by rewrite ge0_fin_numE//; case/andP: OAoo => ?; exact: lt_trans.
         rewrite -EFinM /M lte_fin (le_lt_trans (ceil_ge _))//.
-Fail. Admitted. (*
-        rewrite -natr1 natr_absz ger0_norm ?ltrDl//.
-        by rewrite -ceil_ge0// (@lt_le_trans _ _ 0%R)// divr_ge0// fine_ge0.
+        rewrite -natr1 natr_absz ger0_norm ?ltrDl => [//|].
+        by rewrite -ceil_ge0 (@lt_le_trans _ _ 0%R) ?divr_ge0 ?fine_ge0.
       rewrite big_seq [in leRHS]big_seq.
       apply: lee_sum => //= i /G0G'r [iG rBi].
       rewrite -[leRHS]fineK//; last first.
@@ -3238,6 +3234,6 @@ exists (fset_set (bigB G c%:num)); split.
   apply: (le_trans _ (outer_measureU2 _ _ _)) => //=; apply: le_outer_measure.
   rewrite !(setDE A) -setIUr; apply: setIS.
   by rewrite setDE setUIl setUv setTI -setCI; exact: subsetC.
-Qed. *)
+Qed.
 
 End vitali_theorem_corollary.

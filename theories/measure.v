@@ -1,7 +1,7 @@
 (* mathcomp analysis (c) 2017 Inria and AIST. License: CeCILL-C.              *)
 From mathcomp Require Import all_ssreflect all_algebra archimedean finmap.
 From mathcomp Require Import mathcomp_extra boolp classical_sets functions.
-From mathcomp Require Import cardinality fsbigop reals ereal itv.
+From mathcomp Require Import cardinality fsbigop reals itv ereal.
 From mathcomp Require Import topology normedtype sequences esum numfun.
 From HB Require Import structures.
 
@@ -3575,9 +3575,7 @@ by rewrite /mnormalize; case: ifPn => // _; rewrite measure0 mul0e.
 Qed.
 
 Let mnormalize_ge0 U : 0 <= mnormalize U.
-Proof.
-Fail. Admitted. (*
- by rewrite /mnormalize; case: ifPn => //; case: ifPn. Qed. *)
+Proof. by rewrite /mnormalize; case: ifPn. Qed.
 
 Let mnormalize_sigma_additive : semi_sigma_additive mnormalize.
 Proof.
@@ -4652,7 +4650,7 @@ have [G PG] : {G : ((set T)^nat)^nat & forall n, P n (G n)}.
   apply: (@choice _ _ P) => n; rewrite /P /mu_ext.
   set S := (X in ereal_inf X); move infS : (ereal_inf S) => iS.
   case: iS infS => [r Sr|Soo|Soo].
-  - have en1 : (0 < e%:num / (2 ^ n.+1)%:R)%R by [].
+  - have en1 : (0 < e%:num / (2 ^ n.+1)%:R)%R by exact: gt0.
     have /(lb_ereal_inf_adherent en1) : ereal_inf S \is a fin_num by rewrite Sr.
     move=> [x [B [mB AnB muBx] xS]].
     by exists B; split => //; rewrite muBx -Sr; exact/ltW.
@@ -4680,8 +4678,7 @@ rewrite (_ : esum _ _ = \sum_(i <oo) \sum_(j <oo ) mu (G i j)); last first.
       rewrite predeqE => -[n m] /=; split => //= -[] [_] _ [<-{n} _].
       by move=> [m' _] [] /esym/eqP; rewrite (negbTE ij).
     - by move=> /= [n m]; apply: measure_ge0; exact: (cover_measurable (PG n).1).
-Fail. Admitted. (*
-  rewrite -(image_id [set: nat]) -fun_true esum_pred_image//; last first.
+  rewrite -(image_id [set: nat]) -fun_true esum_pred_image => [||//]; last first.
     by move=> n _; exact: esum_ge0.
   apply: eq_eseriesr => /= j _.
   rewrite -(esum_pred_image (mu \o uncurry G) (pair j) predT)//=; last first.
@@ -4690,9 +4687,9 @@ Fail. Admitted. (*
 apply: lee_lim.
 - apply: is_cvg_nneseries => n _.
   by apply: nneseries_ge0 => m _; exact: (muG_ge0 (n, m)).
-- by apply: is_cvg_nneseries => n _; apply: adde_ge0 => //; exact: mu_ext_ge0.
+- by apply: is_cvg_nneseries => n _; apply: adde_ge0; [exact: mu_ext_ge0|].
 - by near=> n; apply: lee_sum => i _; exact: (PG i).2.
-Unshelve. all: by end_near. Qed. *)
+Unshelve. all: by end_near. Qed.
 
 End outer_measure_construction.
 Declare Scope measure_scope.
@@ -4708,7 +4705,7 @@ HB.instance Definition _ := isOuterMeasure.Build
   R T _ (@mu_ext0 _ _ _ _ (measure0 mu) (measure_ge0 mu))
       (mu_ext_ge0 (measure_ge0 mu))
       (le_mu_ext mu)
-      (mu_ext_sigma_subadditive (measure0 mu) (measure_ge0 mu)).
+      (mu_ext_sigma_subadditive (measure_ge0 mu)).
 
 End outer_measure_of_content.
 

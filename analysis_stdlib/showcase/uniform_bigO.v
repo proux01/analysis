@@ -43,7 +43,7 @@ Definition OuPex (f : A -> R * R -> R^o) (g : R * R -> R^o) :=
 Lemma ler_norm2 (x : normedR2) :
   `|x| <= sqrt (Rsqr (fst x) + Rsqr (snd x)) <= Num.sqrt 2 * `|x|.
 Proof.
-rewrite RsqrtE; last by rewrite addr_ge0 //; apply/RleP/Rle_0_sqr.
+rewrite RsqrtE; last by rewrite addr_ge0; [|apply/RleP/Rle_0_sqr..].
 rewrite !Rsqr_pow2 !RpowE; apply/andP; split.
   by rewrite ge_max; apply/andP; split;
     rewrite -[`|_|]sqrtr_sqr ler_wsqrtr // (lerDl, lerDr) sqr_ge0.
@@ -86,25 +86,23 @@ Proof.
 move=> /OuP_to_ex [_/posnumP[a] [_/posnumP[C] fOg]].
 apply/eqOP; near=> k; near=> x; apply: le_trans (fOg _ _ _ _) _; last 2 first.
 - by near: x; exists (setT, P); [split=> //=; apply: withinT|move=> ? []].
-- rewrite ler_pM//.
-  admit.
+- by rewrite ler_pM.
 - near: x; exists (setT, ball (0 : R^o * R^o) a%:num).
     by split=> //=; rewrite /within /=; near=> x =>_; near: x; apply: nbhsx_ballx.
   move=> x [_ [/=]]; rewrite -ball_normE /= distrC subr0 distrC subr0.
   by move=> ? ?; rewrite gt_max; apply/andP.
-Unshelve. all: by end_near. Admitted. (* Qed. *)
+Unshelve. all: by end_near. Admitted.
 
 Lemma OuO_to_P f g : OuO f g -> OuP f g.
 Proof.
 move=> fOg; apply/Ouex_to_P; move: fOg => /eqOP [k [kreal hk]].
 have /hk [Q [->]] : k < maxr 1 (k + 1) by rewrite lt_max ltrDl orbC ltr01.
 move=> [R [[_/posnumP[e1] Re1] [_/posnumP[e2] Re2]] sRQ] fOg.
-exists (minr e1%:num e2%:num) => //.
-Admitted. (*
+exists (minr e1%:num e2%:num); first by apply: gt0; exact: RbaseSymbolsImpl.R.
 exists (maxr 1 (k + 1)); first by rewrite lt_max ltr01.
 move=> x dx dxe Pdx; apply: (fOg (x, dx)); split=> //=.
 move: dxe; rewrite gt_max !lt_min => /andP[/andP [dxe11 _] /andP [_ dxe22]].
 by apply/sRQ => //; split; [apply/Re1|apply/Re2]; rewrite /= distrC subr0.
-Qed. *)
+Qed.
 
 End UniformBigO.

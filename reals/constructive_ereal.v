@@ -3540,6 +3540,42 @@ Qed.
 
 Canonical EFin_inum i (x : num_def R i) := Itv.mk (EFin_inum_subproof x).
 
+Definition keep_nonneg_itv_bound_subdef b :=
+  match b with
+  | BSide _ (Posz _) => BLeft 0%Z
+  | BSide _ (Negz _) => -oo%O
+  | BInfty _ => -oo%O
+  end.
+Arguments keep_nonneg_itv_bound_subdef /.
+
+Definition keep_nonpos_itv_bound_subdef b :=
+  match b with
+  | BSide _ (Negz _) | BSide _ (Posz 0) => BRight 0%Z
+  | BSide _ (Posz (S _)) => +oo%O
+  | BInfty _ => +oo%O
+  end.
+Arguments keep_nonpos_itv_bound_subdef /.
+
+Definition fine_itv_subdef i :=
+  let: Interval l u := i in
+  Interval (keep_nonneg_itv_bound_subdef l) (keep_nonpos_itv_bound_subdef u).
+
+Lemma fine_inum_subproof i (x : ext_num_def i)
+    (r := itv_real1_subdef fine_itv_subdef i) :
+  num_spec r (fine x%:num).
+Proof.
+rewrite {}/r; case: i x => [//| [l u] [x /=/and3P[xr /= lx xu]]].
+apply/and3P; split=> [//||]/=.
+- case: x lx {xu xr} => [x||]/=; [|by case: l => [? []|]..].
+  by case: l => [[] [l |//] |//] /[!bnd_simp] => [|/ltW]/=; rewrite lee_fin;
+     apply: le_trans.
+- case: x xu {lx xr} => [x||]/=; [|by case: u => [? [[]|] |]..].
+  by case: u => [bu [[|//] | u] |//]; case: bu => /[!bnd_simp] [/ltW|]/=;
+     rewrite lee_fin// => xu; apply: le_trans xu _; rewrite lerz0.
+Qed.
+
+Canonical fine_inum i (x : ext_num_def i) := Itv.mk (fine_inum_subproof x).
+
 Lemma ext_num_sem_y l u :
   ext_num_sem (Interval l u) +oo = ((l != +oo%O) && (u == +oo%O)).
 Proof.
@@ -3803,10 +3839,10 @@ Notation "x %:nng" := (@ext_widen_itv _ _
     (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `[Posz 0, +oo[) _)
   (only printing) : ereal_scope.
 
-#[export] Hint Extern 0 (is_true (0%R < _)%O) => solve [apply: gt0e] : core.
-#[export] Hint Extern 0 (is_true (_ < 0%R)%O) => solve [apply: lte0] : core.
-#[export] Hint Extern 0 (is_true (0%R <= _)%O) => solve [apply: ge0e] : core.
-#[export] Hint Extern 0 (is_true (_ <= 0%R)%O) => solve [apply: lee0] : core.
+#[export] Hint Extern 0 (is_true (lte 0%R _)) => solve [apply: gt0e] : core.
+#[export] Hint Extern 0 (is_true (lte _ 0%R)) => solve [apply: lte0] : core.
+#[export] Hint Extern 0 (is_true (lee 0%R _)) => solve [apply: ge0e] : core.
+#[export] Hint Extern 0 (is_true (lee _ 0%R)) => solve [apply: lee0] : core.
 #[export] Hint Extern 0 (is_true (0%R >=< _)%O) => solve [apply: cmp0e] : core.
 #[export] Hint Extern 0 (is_true (_ != 0%R)%O) => solve [apply: neqe0] : core.
 

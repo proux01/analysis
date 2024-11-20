@@ -254,10 +254,9 @@ apply: (@le_trans _ _
   rewrite (_ : [fset x | x in Y & x \in X] = Y `&` fset_set X)%fset; last first.
     by apply/fsetP => x; rewrite 2!inE/= in_fset_set.
   rewrite (fsetIidPr _).
-Fail. Admitted. (*
-    rewrite fsbig_finite// leeDl// big_seq sume_ge0//=.
+    rewrite fsbig_finite// leeDl ?big_seq ?sume_ge0 => [//|//|/=].
     move=> [x y] /imfsetP[[x1 y1]] /[!inE] /andP[] /imfset2P[x2]/= /[!inE].
-    rewrite andbT in_fset_set//; last exact: finite_set_fst.
+    rewrite andbT in_fset_set; last exact: finite_set_fst.
     move=> /[!inE] x2X [y2] /[!inE] /andP[] /[!in_fset_set]; last first.
       exact: finite_set_snd.
     move=> /[!inE] y2X y2J [-> ->] _ [-> ->]; rewrite a_ge0//.
@@ -276,7 +275,7 @@ rewrite ereal_sup_ubound //=; have ? : finite_set (X.`2 `&` J i).
 exists (X.`2 `&` J i) => //.
 rewrite [in RHS]big_fset_condE/= fsbig_finite//; apply/eq_fbigl => j.
 by rewrite in_fset_set// !inE/= in_setI in_fset_set//; exact: finite_set_snd.
-Qed. *)
+Qed.
 
 Lemma lee_sum_fset_nat (R : realDomainType)
     (f : (\bar R)^nat) (F : {fset nat}) n (P : pred nat) :
@@ -631,8 +630,7 @@ Lemma esumB D f g : summable D f -> summable D g ->
 Proof.
 move=> Df Dg f0 g0.
 have /eqP : esum D (f \- g)^\+ + esum_posneg D g = esum D (f \- g)^\- + esum_posneg D f.
-Fail. Admitted. (*
-  rewrite !ge0_esum_posneg// -!esumD//; last 2 first.
+  rewrite !ge0_esum_posneg -?esumD => [||//||//|//|//]; last 2 first.
     by move=> t Dt; rewrite le_max lexx orbT.
     by move=> t Dt; rewrite le_max lexx orbT.
   apply eq_esum => i Di; have [fg|fg] := leP 0 (f i - g i).
@@ -648,17 +646,17 @@ rewrite [X in _ == X -> _]addeC -sube_eq; last 2 first.
       by move=> t Dt; rewrite /= gee0_abs.
     move: Dg; rewrite summableE (@eq_esum _ _ _ _ g)//.
       by rewrite ge0_esum_posneg// => t Tt; rewrite gee0_abs// g0.
-    by move=> t Tt; rewrite gee0_abs// g0.
+    by move=> t Tt; rewrite gee0_abs ?g0.
   - rewrite fin_num_adde_defr// ge0_esum_posneg//.
     rewrite (@eq_esum _ _ _ _ (abse \o f))// -?summableE// => i Di.
-    by rewrite /= gee0_abs// f0.
+    by rewrite /= gee0_abs ?f0.
 rewrite -addeA addeCA eq_sym [X in _ == X -> _]addeC -sube_eq; last 2 first.
   - rewrite ge0_esum_posneg// (@eq_esum _ _ _ _ (abse \o f))// -?summableE// => i Di.
-    by rewrite /= gee0_abs// f0.
+    by rewrite /= gee0_abs ?f0.
   - rewrite fin_num_adde_defl// ge0_esum_posneg//.
     rewrite (@eq_esum _ _ _ _ (abse \o g))// -?summableE// => i Di.
-    by rewrite /= gee0_abs// g0.
+    by rewrite /= gee0_abs ?g0.
 by rewrite ge0_esum_posneg// ge0_esum_posneg// => /eqP ->.
-Qed. *)
+Qed.
 
 End esumB.
