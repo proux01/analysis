@@ -226,6 +226,8 @@
 
 ### Deprecated
 
+- file `signed.v` (use `itv.v` instead)
+
 - in `itv.v`:
   + notation `%:inum` (use `%:num` instead)
 
