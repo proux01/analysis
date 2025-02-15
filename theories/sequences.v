@@ -2703,7 +2703,7 @@ have Ar : forall na : nat * (U * {posnum K}), exists b : U * {posnum K},
   have /open_nbhs_nbhs/nbhs_closedballP[rn01 Ball_an1] :
     open_nbhs an1 ((closed_ball an rn%:num)^° `&` F n.+1) by [].
   have n31_gt0 : n.+3%:R^-1 > 0 :> K by [].
-  have majr : minr (PosNum n31_gt0)%:num rn01%:num > 0 by exact/gt0/K.
+  have majr : minr (PosNum n31_gt0)%:num rn01%:num > 0 by [].
   exists (an1, PosNum majr); split.
     apply/(subset_trans _ Ball_an1)/le_closed_ball => /=.
     by rewrite ge_min lexx orbT.

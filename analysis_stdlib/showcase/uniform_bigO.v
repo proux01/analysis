@@ -97,7 +97,7 @@ Proof.
 move=> fOg; apply/Ouex_to_P; move: fOg => /eqOP [k [kreal hk]].
 have /hk [Q [->]] : k < maxr 1 (k + 1) by rewrite lt_max ltrDl orbC ltr01.
 move=> [R [[_/posnumP[e1] Re1] [_/posnumP[e2] Re2]] sRQ] fOg.
-exists (minr e1%:num e2%:num); first by apply: gt0; exact: RbaseSymbolsImpl.R.
+exists (minr e1%:num e2%:num); first by [].
 exists (maxr 1 (k + 1)); first by rewrite lt_max ltr01.
 move=> x dx dxe Pdx; apply: (fOg (x, dx)); split=> //=.
 move: dxe; rewrite gt_max !lt_min => /andP[/andP [dxe11 _] /andP [_ dxe22]].

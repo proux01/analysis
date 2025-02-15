@@ -480,7 +480,7 @@ Proof.
 split=> [[k k0 fOg] | [k [kreal fOg]]].
   exists k; rewrite realE (ltW k0) /=; split=> // l ltkl; move: fOg.
   by apply: filter_app; near=> x => /le_trans; apply; rewrite ler_wpM2r // ltW.
-exists (Num.max 1 `|k + 1|); first exact/gt0/K.
+exists (Num.max 1 `|k + 1|); first by [].
 apply: fOg; rewrite (@lt_le_trans _ _ `|k + 1|) //.
   by rewrite (@lt_le_trans _ _ (k + 1)) ?ltrDl // real_ler_norm ?realD.
 by rewrite comparable_le_max ?real_comparable// lexx orbT.
@@ -1484,7 +1484,7 @@ rewrite -eqOmegaE; apply: addOmega.
 - by move=> ?; rewrite /the_bigTheta val_insubd /=; case: ifP.
 - by move=> ?; rewrite /the_bigO val_insubd /=; case: ifP.
 - rewrite eqOmegaE eqOmegaO; have [T1 k1 k2 ? ?] := bigTheta.
-  rewrite bigOE //; apply/bigO_exP; exists k1%:num^-1 => //.
+  rewrite bigOE //; apply/bigO_exP; exists k1%:num^-1; first by [].
   by near do rewrite ler_pdivlMl //.
 Unshelve. all: by end_near. Qed.
 

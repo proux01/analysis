@@ -264,7 +264,7 @@ End TypInstances.
 Export (canonicals) TypInstances.
 
 Class unify {T} f (x y : T) := Unify : f x y = true.
-#[export] Hint Mode unify - - - + : typeclass_instances.
+#[export] Hint Mode unify + + + + : typeclass_instances.
 Class unify' {T} f (x y : T) := Unify' : f x y = true.
 #[export] Instance unify'P {T} f (x y : T) : unify' f x y -> unify f x y := id.
 #[export]
@@ -1036,8 +1036,7 @@ Canonical max_typ_inum d (t : min_max_typ d) (xi yi : Itv.t)
   Itv.mk (min_max_maxP x y).
 
 (* Instance of the above structure for numDomainType *)
-Canonical num_min_max_typ (R : numDomainType) :=
-  MinMaxTyp num_min_spec num_max_spec.
+Canonical num_min_max_typ := MinMaxTyp num_min_spec num_max_spec.
 
 Lemma nat_num_spec (i : Itv.t) (n : nat) : nat_spec i n = num_spec i (n%:R : R).
 Proof.
