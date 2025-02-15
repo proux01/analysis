@@ -612,7 +612,7 @@ Context {R : realFieldType}.
 
 Definition ereal_sup_itv_subdef (i : interval int) : interval int :=
   let 'Interval l u := i in
-  Interval -oo%O (keep_nonpos_itv_bound_subdef u).
+  Interval -oo%O (ItvInstances.keep_nonpos_itv_bound u).
 Arguments ereal_sup_itv_subdef /.
 
 Lemma ereal_sup_inum_subproof i
@@ -637,7 +637,7 @@ Canonical ereal_sup_inum i (S : Itv.def (@ext_num_sem R) i -> Prop) :=
 
 Definition ereal_inf_itv_subdef (i : interval int) : interval int :=
   let 'Interval l u := i in
-  Interval (keep_nonneg_itv_bound_subdef l) +oo%O.
+  Interval (ItvInstances.keep_nonneg_itv_bound l) +oo%O.
 Arguments ereal_inf_itv_subdef /.
 
 Lemma ereal_inf_inum_subproof i

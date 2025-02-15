@@ -18,13 +18,13 @@ From mathcomp Require Import mathcomp_extra boolp.
 (*                                                                            *)
 (* ## types for values within known interval                                  *)
 (* ```                                                                        *)
-(*       {i01 R} == interface type for elements in R that live in `[0, 1];    *)
+(*       {i01 R} == interface type for elements in R that live in `[0, 1]     *)
 (*                  R must have a numDomainType structure.                    *)
 (*                  Allows to solve automatically goals of the form x >= 0    *)
 (*                  and x <= 1 if x is canonically a {i01 R}. {i01 R} is      *)
 (*                  canonically stable by common operations.                  *)
 (*   {itv R & i} == more generic type of values in interval i : interval int  *)
-(*                  (see interval.v for notations that can be sused for i).   *)
+(*                  See interval.v for notations that can be used for i.      *)
 (*                  R must have a numDomainType structure. This type is shown *)
 (*                  to be a porderType.                                       *)
 (*    {posnum R} := {itv R & `]0, +oo[)                                       *)
@@ -34,21 +34,21 @@ From mathcomp Require Import mathcomp_extra boolp.
 (* ## casts from/to values within known interval                              *)
 (* ```                                                                        *)
 (*        x%:itv == explicitly casts x to the most precise known {itv R & i}  *)
-(*                  according to existing canonical instances.                *)
+(*                  according to existing canonical instances                 *)
 (*        x%:i01 == explicitly casts x to {i01 R} according to existing       *)
-(*                  canonical instances.                                      *)
+(*                  canonical instances                                       *)
 (*        x%:pos == explicitly casts x to {posnum R} according to existing    *)
-(*                  canonical instances.                                      *)
+(*                  canonical instances                                       *)
 (*        x%:nng == explicitly casts x to {nonneg R} according to existing    *)
-(*                  canonical instances.                                      *)
-(*        x%:num == explicit cast from {itv R & i} to R.                      *)
-(*     x%:posnum == explicit cast from {posnum R} to R.                       *)
-(*     x%:nngnum == explicit cast from {nonneg R} to R.                       *)
+(*                  canonical instances                                       *)
+(*        x%:num == explicit cast from {itv R & i} to R                       *)
+(*     x%:posnum == explicit cast from {posnum R} to R                        *)
+(*     x%:nngnum == explicit cast from {nonneg R} to R                        *)
 (* ```                                                                        *)
 (*                                                                            *)
 (* ## sign proofs                                                             *)
 (* ```                                                                        *)
-(*    [itv of x] == proof that x is in interval inferred by x%:itv            *)
+(*    [itv of x] == proof that x is in the interval inferred by x%:itv        *)
 (*    [gt0 of x] == proof that x > 0                                          *)
 (*    [lt0 of x] == proof that x < 0                                          *)
 (*    [ge0 of x] == proof that x >= 0                                         *)
@@ -343,69 +343,65 @@ move=> /andP[lxz zux]; apply/andP; split.
 - by apply: le_trans zux _; rewrite intr_le_map_itv_bound ?map_itv_bound_num.
 Qed.
 
-Definition empty_itv := Itv.Real `[Posz 1, Posz 0].
+Definition empty_itv := Itv.Real `[1%Z, 0%Z].
 
-Lemma bottom x : unify_itv i empty_itv -> False.
+Lemma bottom x : ~ unify_itv i empty_itv.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= => /andP[] /le_trans /[apply]; rewrite ler10.
 Qed.
 
-Lemma gt0 x : unify_itv i (Itv.Real `]Posz 0, +oo[) -> 0%R < x%:num :> R.
+Lemma gt0 x : unify_itv i (Itv.Real `]0%Z, +oo[) -> 0 < x%:num :> R.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_].
 by rewrite /= in_itv/= andbT.
 Qed.
 
-Lemma le0F x : unify_itv i (Itv.Real `]Posz 0, +oo[) ->
-  x%:num <= 0%R :> R = false.
+Lemma le0F x : unify_itv i (Itv.Real `]0%Z, +oo[) -> x%:num <= 0 :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= andbT => /lt_geF.
 Qed.
 
-Lemma lt0 x : unify_itv i (Itv.Real `]-oo, Posz 0[) -> x%:num < 0%R :> R.
+Lemma lt0 x : unify_itv i (Itv.Real `]-oo, 0%Z[) -> x%:num < 0 :> R.
 Proof.
 by case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=; rewrite in_itv.
 Qed.
 
-Lemma ge0F x : unify_itv i (Itv.Real `]-oo, Posz 0[) ->
-  0%R <= x%:num :> R = false.
+Lemma ge0F x : unify_itv i (Itv.Real `]-oo, 0%Z[) -> 0 <= x%:num :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= => /lt_geF.
 Qed.
 
-Lemma ge0 x : unify_itv i (Itv.Real `[Posz 0, +oo[) -> 0%R <= x%:num :> R.
+Lemma ge0 x : unify_itv i (Itv.Real `[0%Z, +oo[) -> 0 <= x%:num :> R.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= andbT.
 Qed.
 
-Lemma lt0F x : unify_itv i (Itv.Real `[Posz 0, +oo[) ->
-  x%:num < 0%R :> R = false.
+Lemma lt0F x : unify_itv i (Itv.Real `[0%Z, +oo[) -> x%:num < 0 :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= andbT => /le_gtF.
 Qed.
 
-Lemma le0 x : unify_itv i (Itv.Real `]-oo, Posz 0]) -> x%:num <= 0%R :> R.
+Lemma le0 x : unify_itv i (Itv.Real `]-oo, 0%Z]) -> x%:num <= 0 :> R.
 Proof.
 by case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=; rewrite in_itv.
 Qed.
 
-Lemma gt0F x : unify_itv i (Itv.Real `]-oo, Posz 0]) ->
-  0%R < x%:num :> R = false.
+Lemma gt0F x : unify_itv i (Itv.Real `]-oo, 0%Z]) -> 0 < x%:num :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= => /le_gtF.
 Qed.
 
-Lemma cmp0 x : unify_itv i (Itv.Real `]-oo, +oo[) -> (0 >=< x%:num).
+Lemma cmp0 x : unify_itv i (Itv.Real `]-oo, +oo[) -> 0 >=< x%:num.
 Proof. by case: i x => [//| i' [x /=/andP[]]]. Qed.
 
 Lemma neq0 x :
-  unify (fun ix iy => negb (Itv.sub ix iy)) (Itv.Real `[0%Z, 0%Z]) i ->
+  unify (fun ix iy => ~~ Itv.sub ix iy) (Itv.Real `[0%Z, 0%Z]) i ->
   x%:num != 0 :> R.
 Proof.
 case: i x => [//| [l u] [x /= Px]]; apply: contra => /eqP x0 /=.
@@ -415,29 +411,27 @@ move: Px; rewrite x0 => /and3P[_ /= l0 u0]; apply/andP; split.
 Qed.
 
 Lemma eq0F x :
-  unify (fun ix iy => negb (Itv.sub ix iy)) (Itv.Real `[0%Z, 0%Z]) i ->
+  unify (fun ix iy => ~~ Itv.sub ix iy) (Itv.Real `[0%Z, 0%Z]) i ->
   x%:num == 0 :> R = false.
 Proof. by move=> u; apply/negbTE/neq0. Qed.
 
-Lemma lt1 x : unify_itv i (Itv.Real `]-oo, Posz 1[) -> x%:num < 1%R :> R.
+Lemma lt1 x : unify_itv i (Itv.Real `]-oo, 1%Z[) -> x%:num < 1 :> R.
 Proof.
 by case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=; rewrite in_itv.
 Qed.
 
-Lemma ge1F x : unify_itv i (Itv.Real `]-oo, Posz 1[) ->
-  1%R <= x%:num :> R = false.
+Lemma ge1F x : unify_itv i (Itv.Real `]-oo, 1%Z[) -> 1 <= x%:num :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= => /lt_geF.
 Qed.
 
-Lemma le1 x : unify_itv i (Itv.Real `]-oo, Posz 1]) -> x%:num <= 1%R :> R.
+Lemma le1 x : unify_itv i (Itv.Real `]-oo, 1%Z]) -> x%:num <= 1%R :> R.
 Proof.
 by case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=; rewrite in_itv.
 Qed.
 
-Lemma gt1F x : unify_itv i (Itv.Real `]-oo, Posz 1]) ->
-  1%R < x%:num :> R = false.
+Lemma gt1F x : unify_itv i (Itv.Real `]-oo, 1%Z]) -> 1 < x%:num :> R = false.
 Proof.
 case: x => x /= /[swap] /subitv_map_itv /[apply] /andP[_] /=.
 by rewrite in_itv/= => /le_gtF.
@@ -503,17 +497,17 @@ Notation "[ 'neq0' 'of' x ]" := (ltac:(refine (neq0 x%:itv))).
 
 Notation "x %:i01" := (widen_itv x%:itv : {i01 _}) (only parsing) : ring_scope.
 Notation "x %:i01" := (@widen_itv _ _
-    (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `[Posz 0, Posz 1]) _)
+    (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `[0%Z, 1%Z]) _)
   (only printing) : ring_scope.
 Notation "x %:pos" := (widen_itv x%:itv : {posnum _}) (only parsing)
   : ring_scope.
 Notation "x %:pos" := (@widen_itv _ _
-    (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `]Posz 0, +oo[) _)
+    (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `]0%Z, +oo[) _)
   (only printing) : ring_scope.
 Notation "x %:nng" := (widen_itv x%:itv : {nonneg _}) (only parsing)
   : ring_scope.
 Notation "x %:nng" := (@widen_itv _ _
-    (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `[Posz 0, +oo[) _)
+    (@Itv.from _ _ _ (Phantom _ x)) (Itv.Real `[0%Z, +oo[) _)
   (only printing) : ring_scope.
 
 Local Open Scope ring_scope.
@@ -1085,7 +1079,7 @@ Canonical intmul_inum (xi ni : Itv.t) (x : num_def R xi) (n : num_def int ni) :=
 
 Definition keep_pos_itv_bound (b : itv_bound int) : itv_bound int :=
   match b with
-  | BSide b (Posz 0) => BSide b 0
+  | BSide b 0%Z => BSide b 0
   | BSide _ (Posz (S _)) => BRight 0
   | BSide _ (Negz _) => -oo
   | BInfty _ => -oo
@@ -1106,7 +1100,7 @@ Qed.
 
 Definition keep_neg_itv_bound (b : itv_bound int) : itv_bound int :=
   match b with
-  | BSide b (Posz 0) => BSide b 0
+  | BSide b 0%Z => BSide b 0
   | BSide _ (Negz _) => BLeft 0
   | BSide _ (Posz _) => +oo
   | BInfty _ => +oo
@@ -1147,7 +1141,7 @@ Qed.
 Canonical inv_inum (i : Itv.t) (x : num_def R i) := Itv.mk (inv_spec x).
 
 Definition exprn_le1_itv_bound (l u : itv_bound int) : itv_bound int :=
-  if u isn't BSide _ (Posz 1) then +oo
+  if u isn't BSide _ 1%Z then +oo
   else if (BLeft 0%Z <= l)%O then BRight 1%Z else +oo.
 Arguments exprn_le1_itv_bound /.
 
@@ -1201,7 +1195,7 @@ Definition sqrt_itv (i : Itv.t) : Itv.t :=
   | Itv.Top => Itv.Real `[0%Z, +oo[
   | Itv.Real (Interval l u) =>
     match l with
-    | BSide b (Posz 0) => Itv.Real (Interval (BSide b 0%Z) +oo)
+    | BSide b 0%Z => Itv.Real (Interval (BSide b 0%Z) +oo)
     | BSide b (Posz (S _)) => Itv.Real `]0%Z, +oo[
     | _ => Itv.Real `[0, +oo[
     end
