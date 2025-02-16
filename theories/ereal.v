@@ -610,14 +610,13 @@ Proof. by apply/funext => x; rewrite /= !patchE; case: ifPn. Qed.
 Section SignedRealFieldStability.
 Context {R : realFieldType}.
 
-Definition ereal_sup_itv_subdef (i : interval int) : interval int :=
+Definition ereal_sup_itv (i : interval int) : interval int :=
   let 'Interval l u := i in
-  Interval -oo%O (ItvInstances.keep_nonpos_itv_bound u).
-Arguments ereal_sup_itv_subdef /.
+  Interval -oo%O (IntervalArithmetic.keep_nonpos_itv_bound u).
+Arguments ereal_sup_itv /.
 
-Lemma ereal_sup_inum_subproof i
-    (S : Itv.def (@ext_num_sem R) i -> Prop)
-    (r := itv_real1_subdef ereal_sup_itv_subdef i) :
+Lemma ereal_sup_spec i (S : Itv.def (@ext_num_sem R) i -> Prop)
+    (r := itv_real1_subdef ereal_sup_itv i) :
   Itv.spec (@ext_num_sem R) r (ereal_sup [set x%:num | x in S]%classic).
 Proof.
 rewrite {}/r; case: i S => [//| [l u]] S /=.
@@ -633,16 +632,15 @@ apply/and3P; split.
 Qed.
 
 Canonical ereal_sup_inum i (S : Itv.def (@ext_num_sem R) i -> Prop) :=
-  Itv.mk (ereal_sup_inum_subproof S).
+  Itv.mk (ereal_sup_spec S).
 
-Definition ereal_inf_itv_subdef (i : interval int) : interval int :=
+Definition ereal_inf_itv (i : interval int) : interval int :=
   let 'Interval l u := i in
-  Interval (ItvInstances.keep_nonneg_itv_bound l) +oo%O.
-Arguments ereal_inf_itv_subdef /.
+  Interval (IntervalArithmetic.keep_nonneg_itv_bound l) +oo%O.
+Arguments ereal_inf_itv /.
 
-Lemma ereal_inf_inum_subproof i
-    (S : Itv.def (@ext_num_sem R) i -> Prop)
-    (r := itv_real1_subdef ereal_inf_itv_subdef i) :
+Lemma ereal_inf_spec i (S : Itv.def (@ext_num_sem R) i -> Prop)
+    (r := itv_real1_subdef ereal_inf_itv i) :
   Itv.spec (@ext_num_sem R) r (ereal_inf [set x%:num | x in S]%classic).
 Proof.
 rewrite {}/r; case: i S => [//| [l u]] S /=.
@@ -657,7 +655,7 @@ apply/and3P; split.
 Qed.
 
 Canonical ereal_inf_inum i (S : Itv.def (@ext_num_sem R) i -> Prop) :=
-  Itv.mk (ereal_inf_inum_subproof S).
+  Itv.mk (ereal_inf_spec S).
 
 End SignedRealFieldStability.
 

@@ -3507,20 +3507,22 @@ End ConstructiveDualAddTheory.
 Section Itv.
 Context {R : numDomainType}.
 
+Import IntervalArithmetic.
+
 Definition ext_num_sem (i : interval int) (x : \bar R) :=
   (0 >=< x)%O
   && let: Interval l u := i in
-     x \in Interval (Itv.map_itv_bound (EFin \o intr) l)
-             (Itv.map_itv_bound (EFin \o intr) u).
+     x \in Interval (map_itv_bound (EFin \o intr) l)
+             (map_itv_bound (EFin \o intr) u).
 
 Local Notation num_spec := (Itv.spec (@Itv.num_sem _)).
 Local Notation num_def R := (Itv.def (@Itv.num_sem R)).
-Local Notation num_itv_bound R := (@Itv.map_itv_bound _ R intr).
+Local Notation num_itv_bound R := (@map_itv_bound _ R intr).
 
 Local Notation ext_num_spec := (Itv.spec ext_num_sem).
 Local Notation ext_num_def := (Itv.def ext_num_sem).
 Local Notation ext_num_itv_bound :=
-  (@Itv.map_itv_bound _ (\bar R) (EFin \o intr)).
+  (@map_itv_bound _ (\bar R) (EFin \o intr)).
 
 Lemma ext_num_num_sem_subproof i (x : R) :
   Itv.ext_num_sem i x%:E = Itv.num_sem i x.
@@ -3531,20 +3533,20 @@ Lemma ext_num_num_spec_subproof i (x : R) :
 Proof. by case: i => [//| i]; apply: ext_num_num_sem_subproof. Qed.
 
 Lemma EFin_le_map_itv_bound (x y : itv_bound R) :
-  (Itv.map_itv_bound EFin x <= Itv.map_itv_bound EFin y)%O = (x <= y)%O.
+  (map_itv_bound EFin x <= map_itv_bound EFin y)%O = (x <= y)%O.
 Proof. by case: x y => [xb x | x] [yb y | y]. Qed.
 
 Lemma EFin_BLeft_le_map_itv_bound (x : itv_bound R) (y : R) :
-  (Itv.map_itv_bound EFin x <= BLeft y%:E)%O = (x <= BLeft y)%O.
+  (map_itv_bound EFin x <= BLeft y%:E)%O = (x <= BLeft y)%O.
 Proof.
-rewrite -[BLeft y%:E]/(Itv.map_itv_bound EFin (BLeft y)).
+rewrite -[BLeft y%:E]/(map_itv_bound EFin (BLeft y)).
 by rewrite EFin_le_map_itv_bound.
 Qed.
 
 Lemma BRight_EFin_le_map_itv_bound (x : R) (y : itv_bound R) :
-  (BRight x%:E <= Itv.map_itv_bound EFin y)%O = (BRight x <= y)%O.
+  (BRight x%:E <= map_itv_bound EFin y)%O = (BRight x <= y)%O.
 Proof.
-rewrite -[BRight x%:E]/(Itv.map_itv_bound EFin (BRight x)).
+rewrite -[BRight x%:E]/(map_itv_bound EFin (BRight x)).
 by rewrite EFin_le_map_itv_bound.
 Qed.
 
@@ -3664,14 +3666,16 @@ Import Instances.
 Section Itv.
 Context {R : numDomainType}.
 
+Import IntervalArithmetic.
+
 Local Notation num_spec := (Itv.spec (@Itv.num_sem _)).
 Local Notation num_def R := (Itv.def (@Itv.num_sem R)).
-Local Notation num_itv_bound R := (@Itv.map_itv_bound _ R intr).
+Local Notation num_itv_bound R := (@map_itv_bound _ R intr).
 
 Local Notation ext_num_spec := (Itv.spec ext_num_sem).
 Local Notation ext_num_def := (Itv.def ext_num_sem).
 Local Notation ext_num_itv_bound :=
-  (@Itv.map_itv_bound _ (\bar R) (EFin \o intr)).
+  (@map_itv_bound _ (\bar R) (EFin \o intr)).
 
 Lemma pinfty_spec : ext_num_spec (Itv.Real `]1%Z, +oo[) (+oo : \bar R).
 Proof. by apply/and3P; rewrite /= cmp0y !bnd_simp real_ltry. Qed.
@@ -3690,22 +3694,6 @@ by apply/and3P; split=> [//||]; [case: l lx | case: u xu].
 Qed.
 
 Canonical EFin_inum i (x : num_def R i) := Itv.mk (EFin_spec x).
-
-Definition keep_nonneg_itv_bound b :=
-  match b with
-  | BSide _ (Posz _) => BLeft 0%Z
-  | BSide _ (Negz _) => -oo%O
-  | BInfty _ => -oo%O
-  end.
-Arguments keep_nonneg_itv_bound /.
-
-Definition keep_nonpos_itv_bound b :=
-  match b with
-  | BSide _ (Negz _) | BSide _ (Posz 0) => BRight 0%Z
-  | BSide _ (Posz (S _)) => +oo%O
-  | BInfty _ => +oo%O
-  end.
-Arguments keep_nonpos_itv_bound /.
 
 Definition fine_itv i :=
   let: Interval l u := i in
@@ -3876,7 +3864,7 @@ have x20 : 0 <= x2.
 have x1r : (0 >=< x1)%O by rewrite real_fine; exact/ger0_real/fine_ge0.
 have x2r : (0 >=< x2)%O by rewrite real_fine; exact/ger0_real/fine_ge0.
 have ley b1' b2' :
-    (Itv.map_itv_bound EFin (num_itv_bound R (mul_itv_boundl b1' b2'))
+    (map_itv_bound EFin (num_itv_bound R (mul_itv_boundl b1' b2'))
      <= BLeft +oo%E)%O.
   by case: b1' b2' => [[] [[| ?] | ?] | []] [[] [[| ?] | ?] | []]//=;
      rewrite bnd_simp ?real_leey ?real_ltry/= ?realz.
