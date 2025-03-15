@@ -41,6 +41,7 @@ From mathcomp Require Import lebesgue_measure numfun realfun function_spaces.
 (* ````                                                                       *)
 (*       {mfun aT >-> rT} == type of measurable functions                     *)
 (*                           aT and rT are sigmaRingType's.                   *)
+(*             f \in mfun == holds for f : {mfun _ >-> _}                     *)
 (*         {sfun T >-> R} == type of simple functions                         *)
 (*       {nnsfun T >-> R} == type of non-negative simple functions            *)
 (*           cst_nnsfun r == constant simple function                         *)
