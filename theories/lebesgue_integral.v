@@ -3526,7 +3526,7 @@ rewrite [X in \int[_]_(_ in X) _](_ : _ = `[0%R, n.+1%:R]%classic); last first.
   rewrite -(bigcup_mkord _ (fun k => `[0%R, k.+1%:R]%classic)).
   exists n => //=.
   by rewrite in_itv/= x0 Snx.
-apply: ereal_sup_le.
+apply: ereal_sup_ge.
 exists (\int[mu]_(x in `[0%R, n.+1%:R]) (f x)%:E); first by exists n.
 apply: ge0_subset_integral => //=.
   by apply/measurable_EFinP; exact: measurableT_comp.
@@ -6370,7 +6370,7 @@ Local Notation HL := HL_maximal.
 Lemma HL_maximal_ge0 f D : locally_integrable D f ->
   forall x, 0 <= HL (f \_ D) x.
 Proof.
-move=> Df x; apply: ereal_sup_le => //=.
+move=> Df x; apply: ereal_sup_ge => //=.
 pose k := \int[mu]_(x in D `&` ball x 1) `|f x|%:E.
 exists ((fine (mu (ball x 1)))^-1%:E * k); last first.
   rewrite mule_ge0 ?integral_ge0//.
