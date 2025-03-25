@@ -664,6 +664,28 @@ case: x => x /= /[swap] /num_spec_sub /[apply] /andP[_] /=.
 by rewrite in_itv/= => /le_gtF.
 Qed.
 
+Lemma gt1 x : unify_itv i (Itv.Real `]1%Z, +oo[) -> 1 < x%:num :> R.
+Proof.
+by case: x => x /= /[swap] /num_spec_sub /[apply] /and3P[] /=; rewrite bnd_simp.
+Qed.
+
+Lemma le1F x : unify_itv i (Itv.Real `]1%Z, +oo[) -> x%:num <= 1 :> R = false.
+Proof.
+case: x => x /= /[swap] /num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= andbT => /lt_geF.
+Qed.
+
+Lemma ge1 x : unify_itv i (Itv.Real `[1%Z, +oo[) -> 1 <= x%:num :> R.
+Proof.
+by case: x => x /= /[swap] /num_spec_sub /[apply] /and3P[] /=; rewrite bnd_simp.
+Qed.
+
+Lemma lt1F x : unify_itv i (Itv.Real `[1%Z, +oo[) -> x%:num < 1 :> R = false.
+Proof.
+case: x => x /= /[swap] /num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= andbT => /le_gtF.
+Qed.
+
 Lemma widen_itv_subproof x i' : Itv.sub i i' -> num_spec i' x%:num.
 Proof. by case: x => x /= /[swap] /num_spec_sub; apply. Qed.
 
@@ -719,7 +741,9 @@ Notation "[ 'neq0' 'of' x ]" := (ltac:(refine (neq0 x%:itv))).
   : core.
 #[export] Hint Extern 0 (is_true (0%R >=< _)%R) => solve [apply: cmp0] : core.
 #[export] Hint Extern 0 (is_true (_ != 0%R)) => solve [apply: neq0] : core.
+#[export] Hint Extern 0 (is_true (1%R < _)%R) => solve [apply: gt1] : core.
 #[export] Hint Extern 0 (is_true (_ < 1%R)%R) => solve [apply: lt1] : core.
+#[export] Hint Extern 0 (is_true (1%R <= _)%R) => solve [apply: ge1] : core.
 #[export] Hint Extern 0 (is_true (_ <= 1%R)%R) => solve [apply: le1] : core.
 
 Notation "x %:i01" := (widen_itv x%:itv : {i01 _}) (only parsing) : ring_scope.

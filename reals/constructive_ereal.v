@@ -3613,9 +3613,23 @@ case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_].
 by rewrite /= in_itv/= andbT.
 Qed.
 
+Lemma lee0F x : unify_itv i (Itv.Real `]0%Z, +oo[) ->
+  x%:num <= 0%E :> \bar R = false.
+Proof.
+case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= andbT => /lt_geF.
+Qed.
+
 Lemma lte0 x : unify_itv i (Itv.Real `]-oo, 0%Z[) -> x%:inum < 0%E :> \bar R.
 Proof.
 by case: x => x /=/[swap] /ext_num_spec_sub /[apply] /andP[_]/=; rewrite in_itv.
+Qed.
+
+Lemma ge0eF x : unify_itv i (Itv.Real `]-oo, 0%Z[) ->
+  0%E <= x%:num :> \bar R = false.
+Proof.
+case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= => /lt_geF.
 Qed.
 
 Lemma ge0e x : unify_itv i (Itv.Real `[0%Z, +oo[) -> 0%E <= x%:inum :> \bar R.
@@ -3624,9 +3638,23 @@ case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
 by rewrite in_itv/= andbT.
 Qed.
 
+Lemma lte0F x : unify_itv i (Itv.Real `[0%Z, +oo[) ->
+  x%:num < 0%E :> \bar R = false.
+Proof.
+case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= andbT => /le_gtF.
+Qed.
+
 Lemma lee0 x : unify_itv i (Itv.Real `]-oo, 0%Z]) -> x%:inum <= 0%E :> \bar R.
 Proof.
 by case: x => x /=/[swap] /ext_num_spec_sub /[apply] /andP[_]/=; rewrite in_itv.
+Qed.
+
+Lemma gt0eF x : unify_itv i (Itv.Real `]-oo, 0%Z]) ->
+  0%E < x%:num :> \bar R = false.
+Proof.
+case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= => /le_gtF.
 Qed.
 
 Lemma cmp0e x : unify_itv i (Itv.Real `]-oo, +oo[) -> (0%E >=< x%:inum)%O.
@@ -3640,6 +3668,59 @@ case: i x => [//| [l u] [x /= Px]]; apply: contra => /eqP x0 /=.
 move: Px; rewrite x0 => /and3P[_ /= l0 u0]; apply/andP; split.
 - by case: l l0 => [[] l |]; rewrite ?bnd_simp ?lee_fin ?lte_fin ?lerz0 ?ltrz0.
 - by case: u u0 => [[] u |]; rewrite ?bnd_simp ?lee_fin ?lte_fin ?ler0z ?ltr0z.
+Qed.
+
+Lemma eqe0F x :
+  unify (fun ix iy => ~~ Itv.sub ix iy) (Itv.Real `[0%Z, 0%Z]) i ->
+  x%:num == 0%E :> \bar R = false.
+Proof. by move=> u; apply/negbTE/neqe0. Qed.
+
+Lemma lte1 x : unify_itv i (Itv.Real `]-oo, 1%Z[) -> x%:num < 1 :> \bar R.
+Proof.
+by case: x => x /=/[swap]/ext_num_spec_sub/[apply] /andP[_]/=; rewrite in_itv.
+Qed.
+
+Lemma ge1eF x : unify_itv i (Itv.Real `]-oo, 1%Z[) ->
+  1 <= x%:num :> \bar R = false.
+Proof.
+case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= => /lt_geF.
+Qed.
+
+Lemma lee1 x : unify_itv i (Itv.Real `]-oo, 1%Z]) -> x%:num <= 1 :> \bar R.
+Proof.
+by case: x => x /=/[swap]/ext_num_spec_sub/[apply] /andP[_] /=; rewrite in_itv.
+Qed.
+
+Lemma gt1eF x : unify_itv i (Itv.Real `]-oo, 1%Z]) ->
+  1 < x%:num :> \bar R = false.
+Proof.
+case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= => /le_gtF.
+Qed.
+
+Lemma gt1e x : unify_itv i (Itv.Real `]1%Z, +oo[) -> 1 < x%:num :> \bar R.
+Proof.
+by case: x => x /=/[swap]/ext_num_spec_sub/[apply] /and3P[]/=; rewrite bnd_simp.
+Qed.
+
+Lemma lee1F x : unify_itv i (Itv.Real `]1%Z, +oo[) ->
+  x%:num <= 1 :> \bar R = false.
+Proof.
+case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= andbT => /lt_geF.
+Qed.
+
+Lemma ge1e x : unify_itv i (Itv.Real `[1%Z, +oo[) -> 1 <= x%:num :> \bar R.
+Proof.
+by case: x => x /=/[swap]/ext_num_spec_sub/[apply] /and3P[]/=; rewrite bnd_simp.
+Qed.
+
+Lemma lte1F x : unify_itv i (Itv.Real `[1%Z, +oo[) ->
+  x%:num < 1 :> \bar R = false.
+Proof.
+case: x => x /= /[swap] /ext_num_spec_sub /[apply] /andP[_] /=.
+by rewrite in_itv/= andbT => /le_gtF.
 Qed.
 
 End ItvTheory.
@@ -3687,6 +3768,10 @@ Notation "x %:nng" := (@ext_widen_itv _ _
 #[export] Hint Extern 0 (is_true (_ <= 0%R)%E) => solve [apply: lee0] : core.
 #[export] Hint Extern 0 (is_true (0%R >=< _)%O) => solve [apply: cmp0e] : core.
 #[export] Hint Extern 0 (is_true (_ != 0%R)%O) => solve [apply: neqe0] : core.
+#[export] Hint Extern 0 (is_true (1%R < _)%E) => solve [apply: gt1e] : core.
+#[export] Hint Extern 0 (is_true (_ < 1%R)%E) => solve [apply: lte1] : core.
+#[export] Hint Extern 0 (is_true (1%R <= _)%E) => solve [apply: ge1e] : core.
+#[export] Hint Extern 0 (is_true (_ <= 1%R)%E) => solve [apply: lee1] : core.
 
 Module ItvInstances.
 
